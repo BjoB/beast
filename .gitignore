@@ -1,0 +1,4 @@
+*.txt.user
+/build/
+/.idea/
+/.clangd/
