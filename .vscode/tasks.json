@@ -1,6 +1,17 @@
 {
     "tasks": [
         {
+            "type": "cargo",
+            "subcommand": "build",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "type": "shell",
             "label": "g++ build active file",
             "command": "/usr/bin/g++",
@@ -13,7 +24,7 @@
             "options": {
                 "cwd": "/usr/bin"
             }
-        }
+        },
     ],
     "version": "2.0.0"
 }
