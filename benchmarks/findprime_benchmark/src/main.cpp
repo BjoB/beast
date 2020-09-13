@@ -13,16 +13,12 @@ bool isPrime(int number) {
             break;
         }
     }
-    if (counter == 0) {
-        return true;
-    } else {
-        return false;
-    }
+    return (counter == 0 ? true : false);
 }
 
 int calcNthPrime() {
-    int n = 2000, num = 1;
-    int count = 0;
+    int n = N_VALUE;
+    int num = 1, count = 0;
 
     while (true) {
         num++;
