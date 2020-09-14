@@ -5,6 +5,6 @@ authors = ["bat <bjoern.barschtipan@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-error-chain = "0.12.4"
 is_executable = "0.1.2"
 glob = "0.3.0"
+walkdir = "2.3.1"
