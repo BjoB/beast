@@ -48,7 +48,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/beast",
-            "args": [],
+            "args": ["-d", "${workspaceFolder}"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
