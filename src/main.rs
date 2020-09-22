@@ -1,8 +1,10 @@
 use clap::{App, Arg};
 use std::path::Path;
 
+mod exec;
 mod findbench;
 
+use exec::execute;
 use findbench::find_executable_benchmarks;
 
 fn main() -> Result<(), std::io::Error> {
@@ -26,5 +28,7 @@ fn main() -> Result<(), std::io::Error> {
 
     let benchmark_paths = find_executable_benchmarks(root_dir);
     println!("{:?}", benchmark_paths);
+
+    execute(benchmark_paths);
     Ok(())
 }
