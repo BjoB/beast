@@ -27,8 +27,7 @@ fn main() -> Result<(), std::io::Error> {
     println!("Root scan directory: {:?}", root_dir.as_os_str());
 
     let benchmark_paths = find_executable_benchmarks(root_dir);
-    println!("{:?}", benchmark_paths);
-
+    // println!("{:?}", benchmark_paths);
     execute(benchmark_paths);
     Ok(())
 }
