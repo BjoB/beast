@@ -2,10 +2,12 @@ use clap::{App, Arg};
 use std::path::Path;
 
 mod exec;
-mod findbench;
+mod find;
+mod parse;
+mod plot;
 
-use exec::execute;
-use findbench::find_executable_benchmarks;
+use exec::execute_benchmarks;
+use find::find_executables;
 
 fn main() -> Result<(), std::io::Error> {
     let matches = App::new("beast")
@@ -14,6 +16,12 @@ fn main() -> Result<(), std::io::Error> {
         .arg(Arg::from_usage(
             "[rootdir], -d, --dir=[DIR] 'root directory to use for benchmark search'",
         ))
+        .arg(
+            Arg::from_usage(
+                "[filter], -f, --filter=[REGEXP] 'only run benchmarks matching regular expression'",
+            )
+            .default_value("*benchmark*"),
+        )
         .get_matches();
 
     let root_dir = match matches.value_of("rootdir") {
@@ -24,10 +32,17 @@ fn main() -> Result<(), std::io::Error> {
         },
     };
 
+    let filter_pattern = matches.value_of("filter").unwrap();
+
     println!("Root scan directory: {:?}", root_dir.as_os_str());
 
-    let benchmark_paths = find_executable_benchmarks(root_dir);
-    // println!("{:?}", benchmark_paths);
-    execute(benchmark_paths);
+    let benchmark_paths = find_executables(root_dir, filter_pattern);
+
+    if benchmark_paths.is_empty() {
+        println!("No benchmarks found to run!");
+        return Ok(())
+    }
+
+    execute_benchmarks(benchmark_paths);
     Ok(())
 }
