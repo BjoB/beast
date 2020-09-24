@@ -1,5 +1,5 @@
 use indicatif::{ProgressBar, ProgressStyle};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::parse;
@@ -17,14 +17,18 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
         let exe_name = exe_path.as_path().file_name().unwrap();
         let exe_msg = format!("Executing benchmark \"{}\"...", exe_name.to_string_lossy());
         bar.set_message(&exe_msg);
-        let exe_output = Command::new(exe_path)
-            .arg("--benchmark_format=json")
+        Command::new(exe_path)
+            .arg(format!("--benchmark_out={}", results_path_str()))
+            .arg("--benchmark_out_format=json")
             .output()
             .expect("failed to execute process");
-        //println!("{:?}", exe_output);
-        parse::parse_benchmark_output(exe_output); //TODO: implement!
+        parse::parse_benchmark_json(Path::new(results_path_str()));
         bar.inc(1);
     }
     bar.finish();
     plot::plot(); //TODO: just example
+}
+
+fn results_path_str() -> &'static str {
+    return "/tmp/beast_benchmarkoutput.json";
 }
