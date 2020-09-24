@@ -21,7 +21,7 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
             .arg("--benchmark_format=json")
             .output()
             .expect("failed to execute process");
-        println!("{:?}", exe_output);
+        //println!("{:?}", exe_output);
         parse::parse_benchmark_output(exe_output); //TODO: implement!
         bar.inc(1);
     }
