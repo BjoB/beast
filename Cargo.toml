@@ -1,8 +1,9 @@
 [package]
 name = "beast"
 version = "0.1.0"
-authors = ["bat <bjoern.barschtipan@gmail.com>"]
+authors = ["Björn Barschtipan"]
 edition = "2018"
+readme = "README.md"
 
 [dependencies]
 is_executable = "0.1.2"
