@@ -3,8 +3,8 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::parse;
-use crate::plot::{BenchmarkPlot};
+use crate::parse::*;
+use crate::plot::*;
 
 pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
     let exe_count = exe_paths.as_ref().len() as u64;
@@ -20,7 +20,8 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
         .to_str()
         .expect("Could not convert benchmark result file path to str!");
 
-    let bm_plot = BenchmarkPlot::new();
+    //let bm_plot = BenchmarkPlot::new();
+    let mut bm_all_results: Vec<BenchmarkResults> = Vec::new();
 
     for exe_path in exe_paths.as_ref() {
         let exe_name = exe_path.as_path().file_name().unwrap();
@@ -33,11 +34,14 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
             .output()
             .expect("failed to execute process");
 
-        parse::parse_benchmark_json(&result_file_path);
+        let cur_bm_results = parse_benchmark_json(&result_file_path);
+        bm_all_results.push(cur_bm_results);
+
         bar.inc(1);
     }
     bar.finish();
-    bm_plot.plot();
+    //bm_plot.plot();
+    plot_all(&bm_all_results);
 }
 
 fn result_file_path() -> PathBuf {
