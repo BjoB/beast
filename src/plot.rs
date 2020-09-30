@@ -1,5 +1,6 @@
 use crate::parse::*;
-use plotly::layout::{BarMode, Layout};
+use plotly::common::Title;
+use plotly::layout::{Axis, BarMode, Layout};
 use plotly::{Bar, Plot};
 
 // pub struct BenchmarkPlot {
@@ -38,15 +39,32 @@ use plotly::{Bar, Plot};
 // }
 
 pub fn plot_all(all_results: &Vec<BenchmarkResults>) {
-    let layout = Layout::new().bar_mode(BarMode::Group);
+    // currently first benchmark is used as reference for cpu info and time unit
+    let plot_title = format!(
+        "CPU count: {}, MHz/CPU: {}",
+        all_results[0].context.num_cpus, all_results[0].context.mhz_per_cpu
+    )
+    .to_string();
+    let time_unit = all_results[0].benchmarks[0].time_unit.as_str();
+
+    let y_title = format!("CPU runtime [{}]", time_unit).to_string();
+
+    let layout = Layout::new()
+        .title(Title::from(plot_title.as_str()))
+        .bar_mode(BarMode::Group)
+        .bar_group_gap(0.1)
+        .y_axis(Axis::new().title(Title::from(y_title.as_str())));
+
     let mut plot = Plot::new();
+
     plot.set_layout(layout);
+
     for bm_results in all_results {
         let mut sub_benchmark_names = vec![];
         let mut sub_benchmark_cpu_times = vec![];
         let bm_results_name = bm_results.context.executable.as_path().file_name().unwrap();
 
-        // copy sub benchmarks names for trace
+        // copy sub benchmarks names and results for trace
         for sub_bm_res in &bm_results.benchmarks {
             sub_benchmark_names.push(sub_bm_res.name.clone());
             sub_benchmark_cpu_times.push(sub_bm_res.cpu_time);
