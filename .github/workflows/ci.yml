@@ -35,8 +35,9 @@ jobs:
       run: cargo build
     - name: Run tests
       run: cargo test
-
+      
   debbuild:
+    if: startsWith(github.ref, 'refs/tags/v*')
     needs: [quickcheck, build]
     runs-on: ubuntu-latest
     name: Amd64Deb
@@ -54,6 +55,7 @@ jobs:
         path: ./target/debian/*
 
   update_release_draft:
+    if: startsWith(github.ref, 'refs/tags/v*')
     needs: [quickcheck, build, debbuild]
     runs-on: ubuntu-latest
     steps:
