@@ -1,0 +1,82 @@
+name: ci-chain
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  quickcheck:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.rustversion.outputs.rustversion }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: cargo check
+    - run: cargo pkgid
+    - run: 'echo "$(cargo pkgid | cut -d# -f2)"'
+    - id: rustversion
+      run: 'echo "::set-output name=rustversion::$(cargo pkgid | cut -d# -f2)"'
+
+  build:
+    needs: quickcheck
+    name: 'build-${{matrix.os}}'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build
+    - name: Run tests
+      run: cargo test
+
+  debbuild:
+    needs: [quickcheck, build]
+    runs-on: ubuntu-latest
+    name: Amd64Deb
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install cargo-deb
+      run: cargo install cargo-deb
+    - name: Build deb package
+      run: cargo deb
+      id: debbuild
+    - name: Upload Deb Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: amd64deb
+        path: ./target/debian/*
+
+  update_release_draft:
+    needs: [quickcheck, build, debbuild]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: '${{ needs.quickcheck.outputs.version }}'
+          release_name: Release ${{ needs.quickcheck.outputs.version }}
+          body: 'Change Me'
+          draft: true
+          prerelease: false
+      - uses: actions/download-artifact@v2
+      - run: ls -lha
+      - name: Upload amd64 deb Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./amd64deb/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
+          asset_name: 'beast_${{needs.quickcheck.outputs.version}}_amd64.deb'
+          asset_content_type: application/vnd.debian.binary-package
