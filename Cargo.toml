@@ -1,8 +1,10 @@
 [package]
 name = "beast"
+description = "(be)nchmark (a)nalysis and (s)ummary (t)ool to run, summarize and plot google benchmark executables."
 version = "0.1.0"
 authors = ["Björn Barschtipan"]
 edition = "2018"
+license = "MIT"
 readme = "README.md"
 
 [dependencies]
