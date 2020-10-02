@@ -1,8 +1,10 @@
 name: cd-chain
 
 on:
-  release:
-    types: [created]
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
   quickcheck:
@@ -45,10 +47,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: '${{ needs.quickcheck.outputs.version }}'
-          release_name: Release ${{ needs.quickcheck.outputs.version }}
-          body: 'Change Me'
-          draft: true
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
           prerelease: false
       - uses: actions/download-artifact@v2
       - run: ls -lha
