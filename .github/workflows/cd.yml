@@ -18,6 +18,8 @@ jobs:
     - run: 'echo "$(cargo pkgid | cut -d# -f2)"'
     - id: rustversion
       run: 'echo "::set-output name=rustversion::$(cargo pkgid | cut -d# -f2)"'
+    - id: puretag
+      run: 'echo "::set-output name=tag::${GITHUB_REF#refs/*/}"'
 
   update_release_draft:
     needs: quickcheck
@@ -36,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:               
-          tag_name: ${{ echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,' }} # Strip git ref prefix from version
+          tag_name: ${{ needs.quickcheck.outputs.puretag }}
           draft: true
           prerelease: false
           files: ./target/debian/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
