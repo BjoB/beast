@@ -36,7 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:               
-          tag_name: $(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') # Strip git ref prefix from version
+          tag_name: ${{ echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,' }} # Strip git ref prefix from version
           draft: true
           prerelease: false
           files: ./target/debian/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
