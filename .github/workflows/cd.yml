@@ -18,31 +18,18 @@ jobs:
     - run: 'echo "$(cargo pkgid | cut -d# -f2)"'
     - id: rustversion
       run: 'echo "::set-output name=rustversion::$(cargo pkgid | cut -d# -f2)"'
-      
-  debbuild:
-    needs: [quickcheck]
-    runs-on: ubuntu-latest
-    name: Amd64Deb
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install cargo-deb
-      run: cargo install cargo-deb
-    - name: Build deb package
-      run: cargo deb
-      id: debbuild
-    - name: Upload Deb Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: amd64deb
-        path: ./target/debian/*
 
   update_release_draft:
-    needs: [quickcheck, debbuild]
+    needs: quickcheck
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
+      - name: Build deb package
+        run: cargo deb
       - name: Check repo directory
         run: ls -lha
-      - uses: actions/checkout@v2
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -52,4 +39,4 @@ jobs:
           tag_name: $(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') # Strip git ref prefix from version
           draft: true
           prerelease: false
-          files: ./amd64deb/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
+          files: ./target/debian/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
