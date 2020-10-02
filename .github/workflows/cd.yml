@@ -48,8 +48,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
+        with:               
+          tag_name: $(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,') # Strip git ref prefix from version
           draft: true
           prerelease: false
           files: ./amd64deb/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
