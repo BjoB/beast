@@ -40,6 +40,8 @@ jobs:
     needs: [quickcheck, debbuild]
     runs-on: ubuntu-latest
     steps:
+      - name: Check repo directory
+      - run: ls -lha
       - uses: actions/checkout@v2
       - name: Create release
         id: create_release
@@ -50,14 +52,4 @@ jobs:
           tag_name: ${{ github.ref }}
           draft: true
           prerelease: false
-      - uses: actions/download-artifact@v2
-      - run: ls -lha
-      - name: Upload amd64 deb release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./amd64deb/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
-          asset_name: 'beast_${{needs.quickcheck.outputs.version}}_amd64.deb'
-          asset_content_type: application/vnd.debian.binary-package
+          files: ./amd64deb/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
