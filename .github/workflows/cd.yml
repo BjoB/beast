@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check repo directory
-      - run: ls -lha
+        run: ls -lha
       - uses: actions/checkout@v2
       - name: Create release
         id: create_release
