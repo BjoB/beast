@@ -19,11 +19,6 @@ pub struct BenchmarkContext {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BenchmarkResult {
     pub name: String,
-    pub run_name: String,
-    pub run_type: String,
-    pub repetitions: i32,
-    pub repetition_index: i32,
-    pub threads: i32,
     pub iterations: i32,
     pub real_time: f64,
     pub cpu_time: f64,
