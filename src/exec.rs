@@ -6,7 +6,10 @@ use std::fs::remove_file;
 use std::path::PathBuf;
 use std::process::Command;
 
-pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
+pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
+    exe_paths: PathList,
+    plot_time_unit: &str,
+) {
     let exe_count = exe_paths.as_ref().len() as u64;
     let bar = ProgressBar::new(exe_count);
     let sty = ProgressStyle::default_bar()
@@ -47,7 +50,7 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
         bar.inc(1);
     }
     bar.finish();
-    plot_all(&bm_all_results);
+    plot_all(&bm_all_results, plot_time_unit);
 }
 
 fn result_file_path() -> PathBuf {

@@ -22,7 +22,7 @@ pub struct BenchmarkResult {
     pub iterations: i32,
     pub real_time: f64,
     pub cpu_time: f64,
-    pub time_unit: String,
+    pub time_unit: Option<String>,
 }
 
 pub fn parse_benchmark_json<P: AsRef<Path>>(result_file_path: P) -> BenchmarkResults {

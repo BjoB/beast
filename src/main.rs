@@ -22,6 +22,12 @@ fn main() -> Result<(), std::io::Error> {
             )
             .default_value("*benchmark*"),
         )
+        .arg(
+            Arg::from_usage(
+                "[timeunit], -t, --timeunit=[TIMEUNIT] 'time unit for plots (possible values are: ms, us, ns)'",
+            )
+            .default_value("us"),
+        )
         .get_matches();
 
     let root_dir = match matches.value_of("rootdir") {
@@ -33,6 +39,7 @@ fn main() -> Result<(), std::io::Error> {
     };
 
     let filter_pattern = matches.value_of("filter").unwrap();
+    let plot_time_unit = matches.value_of("timeunit").unwrap();
 
     println!("Root scan directory: {:?}", root_dir.as_os_str());
 
@@ -40,9 +47,9 @@ fn main() -> Result<(), std::io::Error> {
 
     if benchmark_paths.is_empty() {
         println!("No benchmarks found to run!");
-        return Ok(())
+        return Ok(());
     }
 
-    execute_benchmarks(benchmark_paths);
+    execute_benchmarks(benchmark_paths, plot_time_unit);
     Ok(())
 }
