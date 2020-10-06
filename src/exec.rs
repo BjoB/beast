@@ -1,10 +1,10 @@
-use indicatif::{ProgressBar, ProgressStyle};
-use std::env;
-use std::path::PathBuf;
-use std::process::Command;
-
 use crate::parse::*;
 use crate::plot::*;
+use indicatif::{ProgressBar, ProgressStyle};
+use std::env;
+use std::fs::remove_file;
+use std::path::PathBuf;
+use std::process::Command;
 
 pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
     let exe_count = exe_paths.as_ref().len() as u64;
@@ -20,13 +20,14 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
         .to_str()
         .expect("Could not convert benchmark result file path to str!");
 
-    //let bm_plot = BenchmarkPlot::new();
     let mut bm_all_results: Vec<BenchmarkResults> = Vec::new();
 
     for exe_path in exe_paths.as_ref() {
         let exe_name = exe_path.as_path().file_name().unwrap();
-        let exe_msg = format!("Executing benchmark \"{}\"...", exe_name.to_string_lossy());
-        bar.set_message(&exe_msg);
+        bar.set_message(&format!(
+            "Executing benchmark \"{}\"...",
+            exe_name.to_string_lossy()
+        ));
 
         Command::new(exe_path)
             .arg(format!("--benchmark_out={}", result_file_path_str))
@@ -35,12 +36,17 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(exe_paths: PathList) {
             .expect("failed to execute process");
 
         let cur_bm_results = parse_benchmark_json(&result_file_path);
+
+        remove_file(result_file_path.as_path()).expect(&format!(
+            "Unable to remove benchmark result file \"{}\"!",
+            result_file_path_str
+        ));
+
         bm_all_results.push(cur_bm_results);
 
         bar.inc(1);
     }
     bar.finish();
-    //bm_plot.plot();
     plot_all(&bm_all_results);
 }
 
