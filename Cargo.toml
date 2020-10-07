@@ -1,6 +1,6 @@
 [package]
 name = "beast"
-description = "(be)nchmark (a)nalysis and (s)ummary (t)ool to run, summarize and plot google benchmark executables."
+description = "(be)nchmark (a)nalysis and (s)ummary (t)ool"
 version = "0.2.0"
 authors = ["Björn Barschtipan"]
 edition = "2018"
@@ -16,3 +16,14 @@ indicatif = "0.15.0"
 plotly = "0.6.0"
 serde = "1.0.106"
 serde_json = "1.0"
+
+[package.metadata.deb]
+maintainer = "Björn Barschtipan"
+copyright = "2020, Björn Barschtipan"
+license-file = ["LICENSE", "4"]
+extended-description = """\
+A simple command line tool to execute google benchmarks \
+and visualize the results in an nice plot."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
