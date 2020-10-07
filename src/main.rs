@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{crate_version, App, Arg};
 use std::path::Path;
 
 mod exec;
@@ -11,7 +11,7 @@ use find::find_executables;
 
 fn main() -> Result<(), std::io::Error> {
     let matches = App::new("beast")
-        .version("0.1")
+        .version(crate_version!())
         .about("(be)nchmark (a)nalysis and (s)ummary (t)ool")
         .arg(Arg::from_usage(
             "[rootdir], -d, --dir=[DIR] 'root directory to use for benchmark search'",
