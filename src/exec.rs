@@ -32,11 +32,18 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
             exe_name.to_string_lossy()
         ));
 
-        Command::new(exe_path)
+        let benchmark_output = Command::new(exe_path)
             .arg(format!("--benchmark_out={}", result_file_path_str))
             .arg("--benchmark_out_format=json")
             .output()
             .expect("failed to execute process");
+
+        assert!(
+            benchmark_output.status.success(),
+            "{} returned with exit code {}!",
+            exe_name.to_string_lossy(),
+            benchmark_output.status
+        );
 
         let cur_bm_results = parse_benchmark_json(&result_file_path);
 
