@@ -57,6 +57,8 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
         bar.inc(1);
     }
     bar.finish();
+
+    println!("Benchmark execution finished successfully!");
     plot_all(&bm_all_results, plot_time_unit);
 }
 
