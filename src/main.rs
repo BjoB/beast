@@ -37,12 +37,12 @@ fn main() -> Result<(), std::io::Error> {
             .arg(
                 Arg::from_usage(
                     "[mongodb_uri], --set-db-url=[URL] 'set a mongodb url for benchmark result collection'",
-                )   
+                ),
             )
             .arg(
                 Arg::from_usage(
                     "[mongodb_dbname], --set-db-name=[NAME] 'set a mongodb database to push benchmark results to'",
-                )   
+                ),
             )
         )
         .get_matches();
@@ -54,11 +54,13 @@ fn main() -> Result<(), std::io::Error> {
         config.print();
         match matches.value_of("mongodb_uri") {
             Some(provided_url) => config.set_mongodb_uri(&provided_url.to_string()),
-            None => {},
+            None => {}
         }
         match matches.value_of("mongodb_dbname") {
-            Some(provided_mongodb_name) => config.set_mongodb_name(&provided_mongodb_name.to_string()),
-            None => {},
+            Some(provided_mongodb_name) => {
+                config.set_mongodb_name(&provided_mongodb_name.to_string())
+            }
+            None => {}
         }
         return Ok(());
     }
@@ -89,7 +91,7 @@ fn main() -> Result<(), std::io::Error> {
 
     if config.is_db_config_set() {
         let _db = DataBase::init(&config);
-        // TODO: continue with database handling, e.g. only do this when flag is provided
+    // TODO: continue with database handling, e.g. only do this when flag is provided
     } else {
         println!("database config is not yet set. Use 'beast config' for this.");
     }
