@@ -16,6 +16,12 @@ indicatif = "0.15.0"
 plotly = "0.6.0"
 serde = "1.0.106"
 serde_json = "1.0"
+preferences = "1.1.0"
+
+[dependencies.mongodb]
+version = "1.1.1"
+default-features = false
+features = ["sync"]
 
 [package.metadata.deb]
 maintainer = "Björn Barschtipan"
