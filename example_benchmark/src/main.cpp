@@ -39,6 +39,14 @@ static void calcNthPrimeBenchmark(benchmark::State& state) {
     }
 }
 
+static void calcNthPrimeBenchmark_x2(benchmark::State& state) {
+    for (auto _ : state) {
+        calcNthPrime();
+        calcNthPrime();
+    }
+}
+
 BENCHMARK(calcNthPrimeBenchmark);
+BENCHMARK(calcNthPrimeBenchmark_x2);
 
 BENCHMARK_MAIN();
