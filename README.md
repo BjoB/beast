@@ -1,4 +1,4 @@
-# **beast** - The **be**nchmark **a**nalysis and **s**ummary **t**ool
+# **beast** - **be**nchmark **a**nalysis and **s**ummary **t**ool
 
 ![ci](https://github.com/bjob/beast/workflows/ci-chain/badge.svg) ![ci](https://github.com/bjob/beast/workflows/cd-chain/badge.svg) ![Latest Release](https://img.shields.io/github/release/bjob/beast.svg?style=flat)
 
@@ -6,9 +6,9 @@ beast is a simple tool to execute and post-process a set of google benchmarks. T
 
 ## **Installation**
 
-Download the latest release:
+Download the latest release from:
 
-![here](https://img.shields.io/badge/dynamic/json.svg?label=download&url=https://api.github.com/repos/bjob/beast/releases/latest&query=$.assets[0].name&style=flat)
+[![Download beast](https://img.shields.io/badge/dynamic/json.svg?label=download&url=https://api.github.com/repos/bjob/beast/releases/latest&query=$.assets[0].name&style=for-the-badge)](https://github.com/bjob/beast/releases/latest)
 
 and install the ``.deb`` package via ``sudo dpkg -i``.
 
