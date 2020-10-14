@@ -18,6 +18,7 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
         .title(Title::from(plot_title.as_str()))
         .bar_mode(BarMode::Group)
         .bar_group_gap(0.1)
+        .x_axis(Axis::new().auto_margin(true))
         .y_axis(Axis::new().title(Title::from(y_title.as_str())));
 
     let mut plot = Plot::new();
