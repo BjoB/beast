@@ -10,6 +10,7 @@ mod plot;
 
 use config::*;
 use database::*;
+use plot::*;
 use exec::execute_benchmarks;
 use find::find_executables;
 
@@ -45,11 +46,20 @@ fn main() -> Result<(), std::io::Error> {
                 ),
             )
         )
+        .subcommand(SubCommand::with_name("plotlast")
+            .about("Plot benchmark results from last run")
+        )
+        .subcommand(SubCommand::with_name("dbpush")
+            .about("Push previously exported benchmark results to the configured database")
+        )
+        .subcommand(SubCommand::with_name("dbplot")
+            .about("Fetches all benchmark results from the configured database and plot them")
+        )
         .get_matches();
 
     let mut config = AppConfig::init();
 
-    // configuration handling
+    // Configuration handling
     if let Some(ref matches) = matches.subcommand_matches("config") {
         config.print();
         match matches.value_of("mongodb_uri") {
@@ -64,9 +74,23 @@ fn main() -> Result<(), std::io::Error> {
         }
         return Ok(());
     }
-    config.print();
 
-    // main program handling
+    // Database handling
+    if let Some(ref _matches) = matches.subcommand_matches("dbpush") {
+        if config.is_db_config_set() {
+            let _db = DataBase::init(&config);
+        // TODO: continue
+        } else {
+            println!("database config is not yet set. Use 'beast config' for this.");
+        }
+        return Ok(());
+    }
+    if let Some(ref _matches) = matches.subcommand_matches("dbplot") {
+        // TODO: continue
+        return Ok(());
+    }
+
+    // Parse main options
     let root_dir = match matches.value_of("rootdir") {
         Some(valid_val) => Path::new(valid_val).to_path_buf(),
         _ => match std::env::current_dir() {
@@ -77,7 +101,15 @@ fn main() -> Result<(), std::io::Error> {
 
     let filter_pattern = matches.value_of("filter").unwrap();
     let plot_time_unit = matches.value_of("timeunit").unwrap();
+    
+    // Plot last resuls
+    if let Some(ref _matches) = matches.subcommand_matches("plotlast") {
+        let last_results = parse::parse_cumulated_benchmark_file();
+        plot_all(&last_results, plot_time_unit);
+        return Ok(());
+    }
 
+    // Benchmark execution handling
     println!("Root scan directory: {:?}", root_dir.as_os_str());
 
     let benchmark_paths = find_executables(root_dir, filter_pattern);
@@ -88,13 +120,6 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     execute_benchmarks(benchmark_paths, plot_time_unit);
-
-    if config.is_db_config_set() {
-        let _db = DataBase::init(&config);
-    // TODO: continue with database handling, e.g. only do this when flag is provided
-    } else {
-        println!("database config is not yet set. Use 'beast config' for this.");
-    }
 
     return Ok(());
 }

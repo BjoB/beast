@@ -45,7 +45,7 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
             benchmark_output.status
         );
 
-        let cur_bm_results = parse_benchmark_json(&result_file_path);
+        let cur_bm_results = parse_single_benchmark_file(&result_file_path);
 
         remove_file(result_file_path.as_path()).expect(&format!(
             "Unable to remove benchmark result file \"{}\"!",
@@ -59,6 +59,8 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
     bar.finish();
 
     println!("Benchmark execution finished successfully!");
+
+    export_cumulated_results(&bm_all_results);
     plot_all(&bm_all_results, plot_time_unit);
 }
 
