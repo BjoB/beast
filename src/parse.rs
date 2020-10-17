@@ -56,6 +56,10 @@ pub fn parse_single_benchmark_file<P: AsRef<Path>>(file_path: P) -> BenchmarkRes
 
 pub fn parse_cumulated_benchmark_file() -> Vec<BenchmarkResults> {
     let file_path = exported_results_file_path();
+    if !Path::exists(file_path.as_path()) {
+        println!("No benchmark result file found! Run 'beast' to create one!");
+        std::process::exit(0);
+    }
     let cumulated_results = json_from_file(file_path);
     return serde_json::from_value(cumulated_results)
         .expect("Could not deserialize JsonValue from cumulated benchmark file!");
