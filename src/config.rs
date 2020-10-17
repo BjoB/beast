@@ -9,6 +9,7 @@ pub const APP_INFO: AppInfo = AppInfo {
 const DATABASE_PREFS_KEY: &str = "preferences/mongodb";
 const DATABASE_URI_KEY: &str = "url";
 const DATABASE_NAME_KEY: &str = "database_name";
+const DATABASE_BENCHMARK_COLLECTION_KEY: &str = "collection_name";
 
 pub struct AppConfig {
     preferences: PreferencesMap<String>,
@@ -51,6 +52,12 @@ impl AppConfig {
         self.save();
     }
 
+    pub fn set_mongodb_collection(&mut self, name: &String) {
+        self.preferences
+            .insert(DATABASE_BENCHMARK_COLLECTION_KEY.into(), name.into());
+        self.save();
+    }
+
     pub fn mongodb_uri(&self) -> &String {
         self.preferences
             .get(DATABASE_URI_KEY)
@@ -61,6 +68,12 @@ impl AppConfig {
         self.preferences
             .get(DATABASE_NAME_KEY)
             .expect("Can't retrieve mongodb database name from config!")
+    }
+
+    pub fn mongodb_collection(&self) -> &String {
+        self.preferences
+            .get(DATABASE_BENCHMARK_COLLECTION_KEY)
+            .expect("Can't retrieve mongodb collection name from config!")
     }
 
     fn save(&self) {
