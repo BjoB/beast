@@ -1,5 +1,6 @@
 use crate::parse::*;
 use crate::plot::*;
+
 use indicatif::{ProgressBar, ProgressStyle};
 use std::env;
 use std::fs::remove_file;
