@@ -56,14 +56,25 @@ fn main() -> Result<(), std::io::Error> {
         )
         .subcommand(SubCommand::with_name("dbpush")
             .about("Push previously exported benchmark results to the configured database")
+            .arg(
+                Arg::from_usage(
+                    "[tag], --tag=[TAGNAME] 'add a tag to the pushed results'",
+                ),
+            )
         )
         .subcommand(SubCommand::with_name("dbplot")
-            .about("Fetches all benchmark results from the configured database and plot them")
+            .about("Fetches all benchmark results from the configured database and plot them as time series")
+            .arg(
+                Arg::from_usage(
+                    "[fetchfilter], --fetchfilter=[REGEXP] 'filter executables to plot with a mongodb regex'",
+                )
+                .default_value(".*"),
+            )
         )
         .get_matches();
 
     let mut config = AppConfig::init();
-    
+
     // Handle subcommands
     handle_config_commands(&matches, &mut config);
     handle_database_commands(&matches, &config);
@@ -126,10 +137,12 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
 }
 
 fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
+    let plot_time_unit = matches.value_of("timeunit").unwrap();
+
     if let Some(ref _matches) = matches.subcommand_matches("dbpush") {
         if config.is_db_config_set() {
             let db = DataBase::init(&config);
-            db.push_last_results();
+            db.push_last_results(None);
         } else {
             println!("database config is not yet set. Use 'beast config' for this.");
         }
@@ -137,9 +150,18 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
     }
     if let Some(ref _matches) = matches.subcommand_matches("dbplot") {
         if config.is_db_config_set() {
+            let filter_pattern = matches.value_of("fetchfilter").unwrap_or(".*");
             let db = DataBase::init(&config);
-            db.fetch_all();
-        // TODO: plot
+
+            let results = db.fetch(EntryFilter::ExeName(filter_pattern.to_string()));
+            //TODO: support "tag" + "both"
+
+            if results.is_empty() {
+                println!("Did not find any matching results. Nothing to plot!");
+                std::process::exit(0);
+            }
+
+            plot_db_entries(&results, plot_time_unit);
         } else {
             println!("database config is not yet set. Use 'beast config' for this.");
         }

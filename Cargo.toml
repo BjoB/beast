@@ -1,7 +1,7 @@
 [package]
 name = "beast"
 description = "(be)nchmark (a)nalysis and (s)ummary (t)ool"
-version = "0.2.0"
+version = "1.0.0"
 authors = ["Björn Barschtipan"]
 edition = "2018"
 license = "MIT"

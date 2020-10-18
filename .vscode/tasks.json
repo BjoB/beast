@@ -12,6 +12,17 @@
             }
         },
         {
+            "type": "cargo",
+            "subcommand": "test",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
             "type": "shell",
             "label": "g++ build active file",
             "command": "/usr/bin/g++",

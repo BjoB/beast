@@ -8,8 +8,10 @@ use std::path::{Path, PathBuf};
 const LAST_RESULTS_FILENAME: &str = "beast_temp_lastresults.json";
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct BenchmarkResultsVec {
-    pub cumulated_results: Vec<BenchmarkResults>,
+pub struct DataBaseEntry {
+    pub exe_name: String,
+    pub tag: String,
+    pub results: BenchmarkResults,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
