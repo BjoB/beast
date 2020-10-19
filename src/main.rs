@@ -139,10 +139,11 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
 fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
     let plot_time_unit = matches.value_of("timeunit").unwrap();
 
-    if let Some(ref _matches) = matches.subcommand_matches("dbpush") {
+    if let Some(ref matches) = matches.subcommand_matches("dbpush") {
         if config.is_db_config_set() {
             let db = DataBase::init(&config);
-            db.push_last_results(None);
+            let tag_option = matches.value_of("tag").map(String::from);
+            db.push_last_results(tag_option);
         } else {
             println!("database config is not yet set. Use 'beast config' for this.");
         }
@@ -154,7 +155,7 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
             let db = DataBase::init(&config);
 
             let results = db.fetch(EntryFilter::ExeName(filter_pattern.to_string()));
-            //TODO: support "tag" + "both"
+            //TODO: add support for "tag" + "both"
 
             if results.is_empty() {
                 println!("Did not find any matching results. Nothing to plot!");

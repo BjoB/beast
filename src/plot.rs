@@ -53,6 +53,7 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
 pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
     let mut xlabels: HashMap<String, Vec<String>> = HashMap::new();
     let mut cpu_times: HashMap<String, Vec<f64>> = HashMap::new();
+    let mut tags: HashMap<String, Vec<String>> = HashMap::new();
 
     // collect time series data for each "exename_benchmarkname"
     for db_entry in db_entries {
@@ -60,10 +61,7 @@ pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
             let trace_name = db_entry.exe_name.clone() + "_" + single_result.name.as_str();
 
             // build current xlabel
-            let xlabel = build_label(
-                db_entry.results.context.date.as_str(),
-                db_entry.tag.as_str(),
-            );
+            let xlabel = build_label(db_entry.results.context.date.as_str(), "");
 
             // set cpu_time based on time unit for plot
             let cpu_time_as_duration = from_benchmark_time(
@@ -80,6 +78,9 @@ pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
                 .entry(trace_name.clone())
                 .or_insert(Vec::new())
                 .push(converted_cpu_time);
+            tags.entry(trace_name.clone())
+                .or_insert(Vec::new())
+                .push(db_entry.tag.clone());
         }
     }
 
@@ -88,11 +89,7 @@ pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
 
     let layout = Layout::new()
         .title(Title::from("Benchmark results over time"))
-        .x_axis(
-            Axis::new()
-                .title(Title::from("Date"))
-                .auto_margin(true),
-        )
+        .x_axis(Axis::new().title(Title::from("Date")).auto_margin(true))
         .y_axis(Axis::new().title(Title::from(y_title.as_str())));
 
     let mut plot = Plot::new();
@@ -100,10 +97,10 @@ pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
     plot.set_layout(layout);
 
     for trace_name in xlabels.keys() {
-        println!("{:?}", xlabels[trace_name]);
         let trace = Scatter::new(xlabels[trace_name].clone(), cpu_times[trace_name].clone())
             .mode(Mode::LinesMarkers)
             .name(trace_name)
+            .text_array(tags[trace_name].clone())
             .line(Line::new().shape(LineShape::Hv));
 
         plot.add_trace(trace);
