@@ -37,17 +37,17 @@ fn main() -> Result<(), std::io::Error> {
             .about("Handle config for e.g. mongodb access")
             .arg(
                 Arg::from_usage(
-                    "[mongodb_uri], --set-db-url=[URL] 'set a mongodb url to push/fetch benchmark results to/from'",
+                    "[mongodb_uri], --set-db-uri=[URI] 'set a mongodb URI for push/fetch of benchmark results'",
                 ),
             )
             .arg(
                 Arg::from_usage(
-                    "[mongodb_dbname], --set-db-name=[NAME] 'set a mongodb database to access'",
+                    "[mongodb_dbname], --set-db-name=[NAME] 'set a mongodb database to work with'",
                 ),
             )
             .arg(
                 Arg::from_usage(
-                    "[mongodb_collection], --set-db-collection=[COLLECTION] 'set a mongodb collection to push benchmark results to'",
+                    "[mongodb_collection], --set-db-collection=[COLLECTION] 'set a mongodb collection to work with'",
                 ),
             )
         )
