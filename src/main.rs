@@ -23,9 +23,9 @@ fn main() -> Result<(), std::io::Error> {
         ))
         .arg(
             Arg::from_usage(
-                "[filter], -f, --filter=[REGEXP] 'Only run benchmarks matching regular expression'",
+                "[filter], -f, --filter=[REGEXP] 'Only run benchmarks matching the unix shell style glob pattern'",
             )
-            .default_value("*benchmark*"),
+            .default_value("*benchmark*[!.]*"),
         )
         .arg(
             Arg::from_usage(
