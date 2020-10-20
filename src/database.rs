@@ -93,6 +93,22 @@ impl DataBase {
         fetched_results
     }
 
+    pub fn list_tags(&self) -> Vec<String> {
+        let benchmark_collection = self.benchmark_collection();
+
+        let tags = benchmark_collection
+            .distinct(
+                "tag",
+                bson::doc! {"tag": {"$exists" : true, "$ne" : ""} },
+                None,
+            )
+            .expect("Could not retrieve list of tags!");
+
+        tags.iter()
+            .map(|tag| bson::from_bson(tag.clone()).unwrap())
+            .collect()
+    }
+
     fn benchmark_collection(&self) -> Collection {
         self.client
             .database(&self.dbname)

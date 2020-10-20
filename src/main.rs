@@ -63,13 +63,16 @@ fn main() -> Result<(), std::io::Error> {
             )
         )
         .subcommand(SubCommand::with_name("dbplot")
-            .about("Fetches all benchmark results from the configured database and plot them as time series")
+            .about("Fetches all benchmark results from the configured database and plot them as time series. Note: Use the timeunit option from main command to plot in desired time unit.")
             .arg(
                 Arg::from_usage(
                     "[fetchfilter], --fetchfilter=[REGEXP] 'filter executables to plot with a mongodb regex'",
                 )
                 .default_value(".*"),
             )
+        )
+        .subcommand(SubCommand::with_name("dblist")
+            .about("List distinct tags in current benchmark collection")
         )
         .get_matches();
 
@@ -139,19 +142,19 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
 fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
     let plot_time_unit = matches.value_of("timeunit").unwrap();
 
-    if let Some(ref matches) = matches.subcommand_matches("dbpush") {
+    if let Some(ref submatches) = matches.subcommand_matches("dbpush") {
         if config.is_db_config_set() {
             let db = DataBase::init(&config);
-            let tag_option = matches.value_of("tag").map(String::from);
+            let tag_option = submatches.value_of("tag").map(String::from);
             db.push_last_results(tag_option);
         } else {
-            println!("database config is not yet set. Use 'beast config' for this.");
+            print_config_not_set();
         }
         std::process::exit(0);
     }
-    if let Some(ref _matches) = matches.subcommand_matches("dbplot") {
+    if let Some(ref submatches) = matches.subcommand_matches("dbplot") {
         if config.is_db_config_set() {
-            let filter_pattern = matches.value_of("fetchfilter").unwrap_or(".*");
+            let filter_pattern = submatches.value_of("fetchfilter").unwrap_or(".*");
             let db = DataBase::init(&config);
 
             let results = db.fetch(EntryFilter::ExeName(filter_pattern.to_string()));
@@ -164,8 +167,20 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
 
             plot_db_entries(&results, plot_time_unit);
         } else {
-            println!("database config is not yet set. Use 'beast config' for this.");
+            print_config_not_set();
         }
         std::process::exit(0);
     }
+    if let Some(ref _submatches) = matches.subcommand_matches("dblist") {
+        if config.is_db_config_set() {
+            let db = DataBase::init(&config);
+            let tags = db.list_tags();
+            print!("\nFound tags:\n{:?}\n", tags);
+        }
+        std::process::exit(0);
+    }
+}
+
+fn print_config_not_set() {
+    println!("database config is not yet set. Use 'beast config' for this.");
 }
