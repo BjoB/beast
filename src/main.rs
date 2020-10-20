@@ -19,60 +19,62 @@ fn main() -> Result<(), std::io::Error> {
         .version(crate_version!())
         .about("(be)nchmark (a)nalysis and (s)ummary (t)ool")
         .arg(Arg::from_usage(
-            "[rootdir], -d, --dir=[DIR] 'root directory to use for benchmark search'",
+            "[rootdir], -d, --dir=[DIR] 'Root directory to use for benchmark search'",
         ))
         .arg(
             Arg::from_usage(
-                "[filter], -f, --filter=[REGEXP] 'only run benchmarks matching regular expression'",
+                "[filter], -f, --filter=[REGEXP] 'Only run benchmarks matching regular expression'",
             )
             .default_value("*benchmark*"),
         )
         .arg(
             Arg::from_usage(
-                "[timeunit], -t, --timeunit=[TIMEUNIT] 'time unit for plots (possible values are: ms, us, ns)'",
+                "[timeunit], -t, --timeunit=[TIMEUNIT] 'Time unit for plots (possible values are: ms, us, ns)'",
             )
             .default_value("us"),
         )
         .subcommand(SubCommand::with_name("config")
-            .about("Handle config for e.g. mongodb access")
+            .about("Handle configuration of the tool, e.g. for the mongodb access")
             .arg(
                 Arg::from_usage(
-                    "[mongodb_uri], --set-db-uri=[URI] 'set a mongodb URI for push/fetch of benchmark results'",
+                    "[mongodb_uri], --set-db-uri=[URI] 'Sets a mongodb URI for push/fetch of benchmark results'",
                 ),
             )
             .arg(
                 Arg::from_usage(
-                    "[mongodb_dbname], --set-db-name=[NAME] 'set a mongodb database to work with'",
+                    "[mongodb_dbname], --set-db-name=[NAME] 'Sets a mongodb database to work with'",
                 ),
             )
             .arg(
                 Arg::from_usage(
-                    "[mongodb_collection], --set-db-collection=[COLLECTION] 'set a mongodb collection to work with'",
+                    "[mongodb_collection], --set-db-collection=[COLLECTION] 'Sets a mongodb collection to work with'",
                 ),
             )
         )
         .subcommand(SubCommand::with_name("plotlast")
-            .about("Plot benchmark results from last run")
+            .about("Plots benchmark results from last run \n\
+                    Note: Supports the '-t' option after main command to plot with desired time unit.")
         )
         .subcommand(SubCommand::with_name("dbpush")
-            .about("Push previously exported benchmark results to the configured database")
+            .about("Pushes previously exported benchmark results to the configured database")
             .arg(
                 Arg::from_usage(
-                    "[tag], --tag=[TAGNAME] 'add a tag to the pushed results'",
+                    "[tag], --tag=[TAGNAME] 'Adds a tag to the pushed results.'",
                 ),
             )
         )
         .subcommand(SubCommand::with_name("dbplot")
-            .about("Fetches all benchmark results from the configured database and plot them as time series. Note: Use the timeunit option from main command to plot in desired time unit.")
+            .about("Fetches all benchmark results from the configured database and plot them as time series \n\
+                    Note: Supports the '-t' option after main command to plot with desired time unit.")
             .arg(
                 Arg::from_usage(
-                    "[fetchfilter], --fetchfilter=[REGEXP] 'filter executables to plot with a mongodb regex'",
+                    "[fetchfilter], --fetchfilter=[REGEXP] 'Filters executables to plot with a mongodb compatible regexp'",
                 )
                 .default_value(".*"),
             )
         )
         .subcommand(SubCommand::with_name("dblist")
-            .about("List distinct tags in current benchmark collection")
+            .about("Lists distinct tags in current benchmark collection")
         )
         .get_matches();
 
