@@ -19,7 +19,10 @@ and install the ``.deb`` package via ``sudo dpkg -i``.
 ``cd`` to the ``example_benchmark`` directory and call:
 
 ```bash
-cmake --build ../build --target all
+mkdir build
+cd build
+cmake ..
+cmake --build . --target all
 ```
 
 you will get some small benchmark executables which can be plotted with ``beast``:
