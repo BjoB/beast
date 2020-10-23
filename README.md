@@ -14,7 +14,7 @@ and install the ``.deb`` package via ``sudo dpkg -i``.
 
 ## **Usage example**
 
-``beast`` will search for executables with a predefined Unix shell style glob pattern in your current working directory as a default. Check ``beast --help`` for an overview about possible options. We will use the C++ example from the repo directory to show the basic functionality (of course you will need to clone the repo for that):
+``beast`` will search for executables with a predefined regular expression pattern in your current working directory as a default. Check ``beast --help`` for an overview about possible options. We will use the C++ example from the repo directory to show the basic functionality (of course you will need to clone the repo for that):
 
 ``cd`` to the ``example_benchmark`` directory and call:
 

@@ -1,7 +1,7 @@
 [package]
 name = "beast"
 description = "(be)nchmark (a)nalysis and (s)ummary (t)ool"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Björn Barschtipan"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,6 @@ readme = "README.md"
 
 [dependencies]
 is_executable = "0.1.2"
-glob = "0.3.0"
 walkdir = "2.3.1"
 clap = "2.33.3"
 indicatif = "0.15.0"
@@ -17,6 +16,7 @@ plotly = "0.6.0"
 serde = "1.0.106"
 serde_json = "1.0"
 preferences = "1.1.0"
+regex = "1.4.1"
 
 [dependencies.mongodb]
 version = "1.1.1"

@@ -23,9 +23,16 @@ fn main() -> Result<(), std::io::Error> {
         ))
         .arg(
             Arg::from_usage(
-                "[filter], -f, --filter=[REGEXP] 'Only run benchmarks matching the unix shell style glob pattern'",
+                "[filter], -f, --filter=[REGEXP] 'Only run benchmark executables matching the regex pattern'",
             )
-            .default_value("*benchmark*[!.]*"),
+            .default_value(".*benchmark[^.]*$"),
+        )
+        .arg(
+            Arg::with_name("list")
+                .help("List benchmark executables found by the current regex (see '-f')")
+                .short("l")
+                .long("list")
+                //.requires("filter")
         )
         .arg(
             Arg::from_usage(
@@ -96,7 +103,7 @@ fn main() -> Result<(), std::io::Error> {
     let filter_pattern = matches.value_of("filter").unwrap();
     let plot_time_unit = matches.value_of("timeunit").unwrap();
 
-    // Plot last resuls
+    // Plot last results
     if let Some(ref _matches) = matches.subcommand_matches("plotlast") {
         let last_results = parse::parse_cumulated_benchmark_file();
         plot_all(&last_results, plot_time_unit);
@@ -106,10 +113,24 @@ fn main() -> Result<(), std::io::Error> {
     // Benchmark execution handling
     println!("Root scan directory: {:?}", root_dir.as_os_str());
 
-    let benchmark_paths = find_executables(root_dir, filter_pattern);
+    let mut benchmark_paths = find_executables(root_dir, filter_pattern);
 
     if benchmark_paths.is_empty() {
         println!("No benchmarks found to run!");
+        return Ok(());
+    }
+
+    benchmark_paths.sort();
+
+    if matches.is_present("list") {
+        println!("Found benchmark executables:\n");
+        println!(
+            "{}",
+            benchmark_paths
+                .iter()
+                .fold(String::new(), |total_str, arg| total_str
+                    + &arg.as_path().to_string_lossy() + "\n")
+        );
         return Ok(());
     }
 
