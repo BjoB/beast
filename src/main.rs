@@ -71,7 +71,7 @@ fn main() -> Result<(), std::io::Error> {
             )
         )
         .subcommand(SubCommand::with_name("dbplot")
-            .about("Fetches all benchmark results from the configured database and plot them as time series \n\
+            .about("Fetches all benchmark results from the configured database collection and plot them as time series \n\
                     Note: Supports the '-t' option after main command to plot with desired time unit.")
             .arg(
                 Arg::from_usage(
@@ -129,7 +129,8 @@ fn main() -> Result<(), std::io::Error> {
             benchmark_paths
                 .iter()
                 .fold(String::new(), |total_str, arg| total_str
-                    + &arg.as_path().to_string_lossy() + "\n")
+                    + &arg.as_path().to_string_lossy()
+                    + "\n")
         );
         return Ok(());
     }
