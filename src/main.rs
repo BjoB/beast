@@ -40,6 +40,11 @@ fn main() -> Result<(), std::io::Error> {
             )
             .default_value("us"),
         )
+        .arg(
+            Arg::with_name("noplot")
+                .help("Do not create plot for benchmark results, e.g. when using beast in scripts")
+                .long("noplot")
+        )
         .subcommand(SubCommand::with_name("config")
             .about("Handle configuration of the tool, e.g. for the mongodb access")
             .arg(
@@ -135,7 +140,10 @@ fn main() -> Result<(), std::io::Error> {
         return Ok(());
     }
 
-    execute_benchmarks(benchmark_paths, plot_time_unit);
+    let benchmark_results = execute_benchmarks(benchmark_paths);
+    if !matches.is_present("noplot") {
+        plot_all(&benchmark_results, plot_time_unit);
+    }
 
     return Ok(());
 }
