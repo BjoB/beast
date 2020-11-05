@@ -17,6 +17,8 @@ serde = "1.0.106"
 serde_json = "1.0"
 preferences = "1.1.0"
 regex = "1.4.1"
+log = "0.4.11"
+simple_logger = "1.11.0"
 
 [dependencies.mongodb]
 version = "1.1.1"

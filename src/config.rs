@@ -6,80 +6,125 @@ pub const APP_INFO: AppInfo = AppInfo {
     author: "beastuser",
 };
 
-const DATABASE_PREFS_KEY: &str = "preferences/mongodb";
+const DATABASE_CONFIG_PATH: &str = "preferences/mongodb";
 const DATABASE_URI_KEY: &str = "url";
 const DATABASE_NAME_KEY: &str = "database_name";
 const DATABASE_BENCHMARK_COLLECTION_KEY: &str = "collection_name";
 
+const GIT_CONFIG_PATH: &str = "preferences/git";
+const GIT_YAML_PATH_KEY: &str = "git_yaml_path";
+
 pub struct AppConfig {
-    preferences: PreferencesMap<String>,
+    db_config: PreferencesMap<String>,
+    git_config: PreferencesMap<String>,
 }
 
 impl AppConfig {
     pub fn init() -> AppConfig {
-        let loaded_config = match PreferencesMap::<String>::load(&APP_INFO, &DATABASE_PREFS_KEY) {
+        let loaded_db_config =
+            match PreferencesMap::<String>::load(&APP_INFO, &DATABASE_CONFIG_PATH) {
+                Ok(cfg) => cfg,
+                Err(_) => {
+                    // Set default config and return it
+                    let mut default_cfg: PreferencesMap<String> = PreferencesMap::new();
+                    default_cfg.insert(DATABASE_URI_KEY.into(), "".into());
+                    default_cfg.insert(DATABASE_NAME_KEY.into(), "".into());
+                    default_cfg
+                }
+            };
+
+        let loaded_git_config = match PreferencesMap::<String>::load(&APP_INFO, &GIT_CONFIG_PATH) {
             Ok(cfg) => cfg,
             Err(_) => {
                 // Set default config and return it
                 let mut default_cfg: PreferencesMap<String> = PreferencesMap::new();
-                default_cfg.insert(DATABASE_URI_KEY.into(), "".into());
-                default_cfg.insert(DATABASE_NAME_KEY.into(), "".into());
+                default_cfg.insert(GIT_YAML_PATH_KEY.into(), "".into());
                 default_cfg
             }
         };
 
         AppConfig {
-            preferences: loaded_config,
+            db_config: loaded_db_config,
+            git_config: loaded_git_config,
         }
     }
 
+    // Public helper functions
     pub fn print(&self) {
-        println!("Currently loaded config: {:?}", self.preferences);
+        println!("Currently loaded database config:");
+        for (key, value) in &self.db_config {
+            println!("{} : \"{}\"", key, value);
+        }
+        println!("\nCurrently loaded git config:");
+        for (key, value) in &self.git_config {
+            println!("{} : \"{}\"", key, value);
+        }
     }
 
     pub fn is_db_config_set(&self) -> bool {
         return !self.mongodb_uri().is_empty() && !self.mongodb_name().is_empty();
     }
 
+    // Config setter
     pub fn set_mongodb_uri(&mut self, url: &String) {
-        self.preferences.insert(DATABASE_URI_KEY.into(), url.into());
-        self.save();
+        self.set_db_config_value(DATABASE_URI_KEY, url);
     }
 
     pub fn set_mongodb_name(&mut self, name: &String) {
-        self.preferences
-            .insert(DATABASE_NAME_KEY.into(), name.into());
-        self.save();
+        self.set_db_config_value(DATABASE_NAME_KEY, name);
     }
 
     pub fn set_mongodb_collection(&mut self, name: &String) {
-        self.preferences
-            .insert(DATABASE_BENCHMARK_COLLECTION_KEY.into(), name.into());
-        self.save();
+        self.set_db_config_value(DATABASE_BENCHMARK_COLLECTION_KEY, name);
     }
 
+    pub fn set_git_config_yaml(&mut self, repo_url: &String) {
+        self.set_git_config_value(GIT_YAML_PATH_KEY, repo_url);
+    }
+
+    // Config getter
     pub fn mongodb_uri(&self) -> &String {
-        self.preferences
-            .get(DATABASE_URI_KEY)
-            .expect("Can't retrieve mongodb url from config!")
+        self.get_db_config_value(DATABASE_URI_KEY)
     }
 
     pub fn mongodb_name(&self) -> &String {
-        self.preferences
-            .get(DATABASE_NAME_KEY)
-            .expect("Can't retrieve mongodb database name from config!")
+        self.get_db_config_value(DATABASE_NAME_KEY)
     }
 
     pub fn mongodb_collection(&self) -> &String {
-        self.preferences
-            .get(DATABASE_BENCHMARK_COLLECTION_KEY)
-            .expect("Can't retrieve mongodb collection name from config!")
+        self.get_db_config_value(DATABASE_BENCHMARK_COLLECTION_KEY)
     }
 
-    fn save(&self) {
-        self.preferences
-            .save(&APP_INFO, &DATABASE_PREFS_KEY)
-            .expect("Failed to save new default config!");
-        println!("Config successfully saved: {:?}", self.preferences);
+    pub fn git_config_yaml(&self) -> &String {
+        self.get_git_config_value(GIT_YAML_PATH_KEY)
+    }
+
+    // Private helper functions
+    fn set_db_config_value(&mut self, key: &str, value: &str) {
+        self.db_config.insert(key.into(), value.into());
+        self.db_config
+            .save(&APP_INFO, DATABASE_CONFIG_PATH)
+            .expect("Failed to save new default db config!");
+        println!("Config successfully saved: {:?}", self.db_config);
+    }
+
+    fn get_db_config_value(&self, key: &str) -> &String {
+        self.db_config
+            .get(key)
+            .expect(&format!("Can't retrieve config value for key '{}'!", key))
+    }
+
+    fn set_git_config_value(&mut self, key: &str, value: &str) {
+        self.git_config.insert(key.into(), value.into());
+        self.git_config
+            .save(&APP_INFO, GIT_CONFIG_PATH)
+            .expect("Failed to save new default git config!");
+        println!("Config successfully saved: {:?}", self.git_config);
+    }
+
+    fn get_git_config_value(&self, key: &str) -> &String {
+        self.git_config
+            .get(key)
+            .expect(&format!("Can't retrieve config value for key '{}'!", key))
     }
 }

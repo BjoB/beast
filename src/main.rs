@@ -13,8 +13,11 @@ use database::*;
 use exec::execute_benchmarks;
 use find::find_executables;
 use plot::*;
+use simple_logger::SimpleLogger;
 
 fn main() -> Result<(), std::io::Error> {
+    SimpleLogger::new().init().unwrap();
+
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .about("(be)nchmark (a)nalysis and (s)ummary (t)ool")
@@ -46,7 +49,7 @@ fn main() -> Result<(), std::io::Error> {
                 .long("noplot")
         )
         .subcommand(SubCommand::with_name("config")
-            .about("Handle configuration of the tool, e.g. for the mongodb access")
+            .about("Handle beast's configuration, e.g. the mongodb access or the git settings")
             .arg(
                 Arg::from_usage(
                     "[mongodb_uri], --set-db-uri=[URI] 'Sets a mongodb URI for push/fetch of benchmark results'",
@@ -60,6 +63,11 @@ fn main() -> Result<(), std::io::Error> {
             .arg(
                 Arg::from_usage(
                     "[mongodb_collection], --set-db-collection=[COLLECTION] 'Sets a mongodb collection to work with'",
+                ),
+            )
+            .arg(
+                Arg::from_usage(
+                    "[git_yaml_path], --set-git-yaml=[PATH] 'Sets path to the git settings yaml file'",
                 ),
             )
         )
@@ -164,6 +172,21 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
         match matches.value_of("mongodb_collection") {
             Some(provided_mongodb_collection) => {
                 config.set_mongodb_collection(&provided_mongodb_collection.to_string())
+            }
+            None => {}
+        }
+        match matches.value_of("git_yaml_path") {
+            Some(git_yaml_path) => {
+                match std::fs::canonicalize(git_yaml_path) {
+                    Ok(path) => {
+                        config.set_git_config_yaml(&path.as_path().to_string_lossy().to_string())
+                    }
+                    Err(e) => log::error!(
+                        "Path '{}' does not exist or can't be read ({})!",
+                        git_yaml_path,
+                        e
+                    ),
+                };
             }
             None => {}
         }
