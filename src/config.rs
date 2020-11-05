@@ -1,4 +1,5 @@
 use clap::crate_name;
+use colored::Colorize;
 use preferences::{AppInfo, Preferences, PreferencesMap};
 
 pub const APP_INFO: AppInfo = AppInfo {
@@ -12,7 +13,7 @@ const DATABASE_NAME_KEY: &str = "database_name";
 const DATABASE_BENCHMARK_COLLECTION_KEY: &str = "collection_name";
 
 const GIT_CONFIG_PATH: &str = "preferences/git";
-const GIT_YAML_PATH_KEY: &str = "git_yaml_path";
+const GIT_YAML_PATH_KEY: &str = "repocheck_yaml_path";
 
 pub struct AppConfig {
     db_config: PreferencesMap<String>,
@@ -51,11 +52,11 @@ impl AppConfig {
 
     // Public helper functions
     pub fn print(&self) {
-        println!("Currently loaded database config:");
+        println!("{}", "Currently loaded database config:".cyan());
         for (key, value) in &self.db_config {
             println!("{} : \"{}\"", key, value);
         }
-        println!("\nCurrently loaded git config:");
+        println!("\n{}", "Currently loaded repocheck config:".cyan());
         for (key, value) in &self.git_config {
             println!("{} : \"{}\"", key, value);
         }
@@ -78,7 +79,7 @@ impl AppConfig {
         self.set_db_config_value(DATABASE_BENCHMARK_COLLECTION_KEY, name);
     }
 
-    pub fn set_git_config_yaml(&mut self, repo_url: &String) {
+    pub fn set_repocheck_config_yaml(&mut self, repo_url: &String) {
         self.set_git_config_value(GIT_YAML_PATH_KEY, repo_url);
     }
 
@@ -95,7 +96,7 @@ impl AppConfig {
         self.get_db_config_value(DATABASE_BENCHMARK_COLLECTION_KEY)
     }
 
-    pub fn git_config_yaml(&self) -> &String {
+    pub fn repocheck_config_yaml(&self) -> &String {
         self.get_git_config_value(GIT_YAML_PATH_KEY)
     }
 

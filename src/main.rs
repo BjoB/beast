@@ -7,12 +7,14 @@ mod exec;
 mod find;
 mod parse;
 mod plot;
+mod repocheck;
 
 use config::*;
 use database::*;
 use exec::execute_benchmarks;
 use find::find_executables;
 use plot::*;
+use repocheck::*;
 use simple_logger::SimpleLogger;
 
 fn main() -> Result<(), std::io::Error> {
@@ -67,7 +69,7 @@ fn main() -> Result<(), std::io::Error> {
             )
             .arg(
                 Arg::from_usage(
-                    "[git_yaml_path], --set-git-yaml=[PATH] 'Sets path to the git settings yaml file'",
+                    "[repocheck_yaml_path], --set-repocheck-yaml=[PATH] 'Sets path to the repocheck settings yaml file'",
                 ),
             )
         )
@@ -96,6 +98,9 @@ fn main() -> Result<(), std::io::Error> {
         .subcommand(SubCommand::with_name("dblist")
             .about("Lists distinct tags in current benchmark collection")
         )
+        .subcommand(SubCommand::with_name("repocheck")
+            .about("Runs beast for the commit range previously specified in the yaml set via 'beast config'.")
+        )
         .get_matches();
 
     let mut config = AppConfig::init();
@@ -103,6 +108,7 @@ fn main() -> Result<(), std::io::Error> {
     // Handle subcommands
     handle_config_commands(&matches, &mut config);
     handle_database_commands(&matches, &config);
+    handle_repocheck_commands(&matches, &config);
 
     // Parse main options
     let root_dir = match matches.value_of("rootdir") {
@@ -175,15 +181,14 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
             }
             None => {}
         }
-        match matches.value_of("git_yaml_path") {
-            Some(git_yaml_path) => {
-                match std::fs::canonicalize(git_yaml_path) {
-                    Ok(path) => {
-                        config.set_git_config_yaml(&path.as_path().to_string_lossy().to_string())
-                    }
+        match matches.value_of("repocheck_yaml_path") {
+            Some(yaml_path) => {
+                match std::fs::canonicalize(yaml_path) {
+                    Ok(path) => config
+                        .set_repocheck_config_yaml(&path.as_path().to_string_lossy().to_string()),
                     Err(e) => log::error!(
                         "Path '{}' does not exist or can't be read ({})!",
-                        git_yaml_path,
+                        yaml_path,
                         e
                     ),
                 };
@@ -232,6 +237,14 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
             let tags = db.list_tags();
             print!("\nFound tags:\n{:?}\n", tags);
         }
+        std::process::exit(0);
+    }
+}
+
+fn handle_repocheck_commands(matches: &ArgMatches, config: &AppConfig) {
+    if let Some(ref _submatches) = matches.subcommand_matches("repocheck") {
+        let yaml_path = Path::new(config.repocheck_config_yaml());
+        parse_repocheck_settings(yaml_path);
         std::process::exit(0);
     }
 }
