@@ -20,6 +20,8 @@ regex = "1.4.1"
 log = "0.4.11"
 simple_logger = "1.11.0"
 colored = "2"
+yaml-rust = "0.4.4"
+serde_yaml= "0.8.14"
 
 [dependencies.mongodb]
 version = "1.1.1"
