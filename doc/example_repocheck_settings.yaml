@@ -1,0 +1,12 @@
+version: 1
+repo_path: .
+branch_name: master
+from_commit: a92f7b6f4e5da30908577b9109040987f6ca9bf6
+to_commit: 85347d6fd06acbd700be5237a94ca49486bb5e25
+build_commands: |
+  mkdir build
+  cd build
+  cmake ..
+  cmake --build . --target all
+benchmark_regex: .*benchmark[^.]*$
+
