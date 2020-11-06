@@ -14,7 +14,6 @@ use database::*;
 use exec::execute_benchmarks;
 use find::find_executables;
 use plot::*;
-use repocheck::*;
 use simple_logger::SimpleLogger;
 
 fn main() -> Result<(), std::io::Error> {
@@ -244,7 +243,8 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
 fn handle_repocheck_commands(matches: &ArgMatches, config: &AppConfig) {
     if let Some(ref _submatches) = matches.subcommand_matches("repocheck") {
         let yaml_path = Path::new(config.repocheck_config_yaml());
-        parse_repocheck_settings(yaml_path);
+        let settings = repocheck::parse(yaml_path);
+        repocheck::run(&settings);
         std::process::exit(0);
     }
 }
