@@ -1,6 +1,7 @@
 use crate::logger::*;
 
-use git2::Repository;
+use colored::*;
+use git2::{Error, Oid, Repository};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
@@ -37,14 +38,42 @@ pub fn run(settings: &RepocheckSettings) {
         }
     };
 
-    let _repo = match Repository::open(full_repo_path.as_path()) {
+    let repo = match Repository::open(full_repo_path.as_path()) {
         Ok(repo) => repo,
         Err(e) => {
             error_and_exit("Could not open repository", &e);
         }
     };
 
-    // TODO ...
+    // TODO: Also check if repo state is clean
+
+    println!("Checking specified from/to commit range...");
+    if let Err(e) = check_commits(&repo, &settings) {
+        error_and_exit("Did not find commit hash(es)", &e);
+    }
+    println!("{}", "Successful!".green());
+}
+
+fn check_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
+    let from_commit_oid = Oid::from_str(settings.from_commit.as_str())?;
+    let to_commit_oid = Oid::from_str(settings.to_commit.as_str())?;
+    let from_commit_parent = repo.find_commit(from_commit_oid)?.parent(0)?;
+
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push(to_commit_oid)?;
+    revwalk.hide(from_commit_parent.id())?;
+    revwalk.simplify_first_parent()?;
+    revwalk.set_sorting(git2::Sort::REVERSE | git2::Sort::TIME)?;
+
+    let mut count = 0;
+    for id in revwalk {
+        count += 1;
+        let id = id?;
+        println!("{}", id);
+    }
+    println!("Number of commits found: {}", count);
+
+    Ok(())
 }
 
 #[cfg(test)]
