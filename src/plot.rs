@@ -1,4 +1,5 @@
 use crate::parse::*;
+
 use plotly::common::{Line, LineShape, Mode, Title};
 use plotly::layout::{Axis, BarMode, Layout};
 use plotly::{Bar, Plot, Scatter};
