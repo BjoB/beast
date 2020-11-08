@@ -1,24 +1,23 @@
 use clap::{crate_name, crate_version, App, Arg, ArgMatches, SubCommand};
+use find::find_executables;
 use std::path::Path;
 
 mod config;
 mod database;
 mod exec;
 mod find;
+mod logger;
 mod parse;
 mod plot;
 mod repocheck;
 
-use config::*;
-use database::*;
-use exec::execute_benchmarks;
-use find::find_executables;
-use plot::*;
-use simple_logger::SimpleLogger;
+use crate::config::*;
+use crate::database::*;
+use crate::exec::execute_benchmarks;
+use crate::logger::*;
+use crate::plot::*;
 
 fn main() -> Result<(), std::io::Error> {
-    SimpleLogger::new().init().unwrap();
-
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .about("(be)nchmark (a)nalysis and (s)ummary (t)ool")
@@ -185,10 +184,9 @@ fn handle_config_commands(matches: &ArgMatches, config: &mut AppConfig) {
                 match std::fs::canonicalize(yaml_path) {
                     Ok(path) => config
                         .set_repocheck_config_yaml(&path.as_path().to_string_lossy().to_string()),
-                    Err(e) => log::error!(
-                        "Path '{}' does not exist or can't be read ({})!",
-                        yaml_path,
-                        e
+                    Err(e) => error_and_exit(
+                        &format!("Path '{}' does not exist or can't be read", yaml_path),
+                        &e,
                     ),
                 };
             }
