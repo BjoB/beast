@@ -46,15 +46,32 @@ pub fn run(settings: &RepocheckSettings) {
     };
 
     // TODO: Also check if repo state is clean
-
-    println!("Checking specified from/to commit range...");
-    if let Err(e) = check_commits(&repo, &settings) {
-        error_and_exit("Did not find commit hash(es)", &e);
+    println!(
+        "Checking out branch '{}' in repository '{}'...",
+        settings.branch_name,
+        full_repo_path.to_string_lossy()
+    );
+    if let Err(e) = checkout_branch(&repo, &settings) {
+        error_and_exit("Could not checkout specified branch", &e);
     }
-    println!("{}", "Successful!".green());
+    println!("{}\n", "Successful!".green());
+
+    println!("Walking specified commit range...");
+    if let Err(e) = walk_commits(&repo, &settings) {
+        error_and_exit("Could not walk through specified commit range", &e);
+    }
+    println!("{}\n", "Successful!".green());
 }
 
-fn check_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
+fn checkout_branch(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
+    let branch_name = &settings.branch_name;
+    let obj = repo.revparse_single(&("refs/heads/".to_owned() + branch_name))?;
+    repo.checkout_tree(&obj, None)?;
+    repo.set_head(&("refs/heads/".to_owned() + branch_name))?;
+    Ok(())
+}
+
+fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
     let from_commit_oid = Oid::from_str(settings.from_commit.as_str())?;
     let to_commit_oid = Oid::from_str(settings.to_commit.as_str())?;
     let from_commit_parent = repo.find_commit(from_commit_oid)?.parent(0)?;
@@ -65,14 +82,18 @@ fn check_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), 
     revwalk.simplify_first_parent()?;
     revwalk.set_sorting(git2::Sort::REVERSE | git2::Sort::TIME)?;
 
-    let mut count = 0;
-    for id in revwalk {
-        count += 1;
-        let id = id?;
-        println!("{}", id);
-    }
-    println!("Number of commits found: {}", count);
+    for rev in revwalk {
+        let commit = repo.find_commit(rev?)?;
+        checkout_commit(commit.id())?;
 
+        println!("Building for commit {}...", commit.id());
+    }
+
+    Ok(())
+}
+
+fn checkout_commit(_oid: git2::Oid) -> Result<(), Error> {
+    //TODO
     Ok(())
 }
 
