@@ -1,7 +1,7 @@
 use crate::logger::*;
 
 use colored::*;
-use git2::{Error, Oid, Repository};
+use git2::{Error, Oid, Repository, Commit};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
@@ -45,13 +45,17 @@ pub fn run(settings: &RepocheckSettings) {
         }
     };
 
-    // TODO: Also check if repo state is clean
+    if repo.state() != git2::RepositoryState::Clean {
+        let e = Error::from_str("RepositoryState != Clean");
+        error_and_exit("Clean up repository state first!", &e);
+    }
+
     println!(
         "Checking out branch '{}' in repository '{}'...",
         settings.branch_name,
         full_repo_path.to_string_lossy()
     );
-    if let Err(e) = checkout_branch(&repo, &settings) {
+    if let Err(e) = checkout_branch(&repo, &settings.branch_name) {
         error_and_exit("Could not checkout specified branch", &e);
     }
     println!("{}\n", "Successful!".green());
@@ -61,14 +65,6 @@ pub fn run(settings: &RepocheckSettings) {
         error_and_exit("Could not walk through specified commit range", &e);
     }
     println!("{}\n", "Successful!".green());
-}
-
-fn checkout_branch(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
-    let branch_name = &settings.branch_name;
-    let obj = repo.revparse_single(&("refs/heads/".to_owned() + branch_name))?;
-    repo.checkout_tree(&obj, None)?;
-    repo.set_head(&("refs/heads/".to_owned() + branch_name))?;
-    Ok(())
 }
 
 fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
@@ -84,16 +80,25 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
 
     for rev in revwalk {
         let commit = repo.find_commit(rev?)?;
-        checkout_commit(commit.id())?;
+        checkout_commit(repo, &commit)?;
 
         println!("Building for commit {}...", commit.id());
+        // TODO
     }
 
     Ok(())
 }
 
-fn checkout_commit(_oid: git2::Oid) -> Result<(), Error> {
-    //TODO
+fn checkout_branch(repo: &Repository, branch_name: &str) -> Result<(), Error> {
+    let obj = repo.revparse_single(&("refs/heads/".to_owned() + branch_name))?;
+    repo.checkout_tree(&obj, None)?;
+    repo.set_head(&("refs/heads/".to_owned() + branch_name))?;
+    Ok(())
+}
+
+fn checkout_commit(repo: &Repository, commit: &Commit) -> Result<(), Error> {
+    repo.checkout_tree(commit.as_object(), None)?;
+    repo.set_head_detached(commit.id())?;
     Ok(())
 }
 
