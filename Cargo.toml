@@ -21,6 +21,7 @@ colored = "2"
 yaml-rust = "0.4.4"
 serde_yaml= "0.8.14"
 git2 = "0.13.12"
+execute = "0.2.8"
 
 [dependencies.mongodb]
 version = "1.1.1"

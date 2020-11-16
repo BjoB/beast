@@ -1,7 +1,8 @@
 use crate::logger::*;
 
 use colored::*;
-use git2::{Error, Oid, Repository, Commit};
+use execute::{command, Execute};
+use git2::{Commit, Error, Oid, Repository};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
@@ -83,7 +84,26 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
         checkout_commit(repo, &commit)?;
 
         println!("Building for commit {}...", commit.id());
-        // TODO
+
+        let repo_workdir = repo.workdir().unwrap();
+        println!(
+            "Using working directory {}...",
+            repo_workdir.to_string_lossy()
+        );
+
+        for cmd in settings.build_commands.lines() {
+            println!("Executing cmd: {}", cmd.blue());
+            let mut build_cmd = command(cmd);
+            let output = match build_cmd.current_dir(repo_workdir).execute_output() {
+                Ok(res) => res,
+                Err(e) => error_and_exit("Command execution error", &e),
+            };
+            let output_str = String::from_utf8(output.stdout).unwrap();
+            print!("{}\n", output_str.as_str());
+        }
+
+        println!("{}\n", "Successful!".green());
+        //TODO
     }
 
     Ok(())
