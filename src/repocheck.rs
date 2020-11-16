@@ -1,7 +1,7 @@
 use crate::logger::*;
 
 use colored::*;
-use execute::{command, Execute};
+use execute::{shell, Execute};
 use git2::{Commit, Error, Oid, Repository};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -93,7 +93,7 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
 
         for cmd in settings.build_commands.lines() {
             println!("Executing cmd: {}", cmd.blue());
-            let mut build_cmd = command(cmd);
+            let mut build_cmd = shell(cmd);
             let output = match build_cmd.current_dir(repo_workdir).execute_output() {
                 Ok(res) => res,
                 Err(e) => error_and_exit("Command execution error", &e),
@@ -103,7 +103,8 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
         }
 
         println!("{}\n", "Successful!".green());
-        //TODO
+
+        //TODO: execute benchmark
     }
 
     Ok(())
