@@ -13,8 +13,9 @@ mod repocheck;
 
 use crate::config::*;
 use crate::database::*;
-use crate::exec::execute_benchmarks;
+use crate::exec::*;
 use crate::logger::*;
+use crate::parse::*;
 use crate::plot::*;
 
 fn main() -> Result<(), std::io::Error> {
@@ -153,6 +154,8 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     let benchmark_results = execute_benchmarks(benchmark_paths);
+    export_cumulated_results(&benchmark_results);
+
     if !matches.is_present("noplot") {
         plot_all(&benchmark_results, plot_time_unit);
     }

@@ -59,8 +59,6 @@ pub fn execute_benchmarks<PathList: AsRef<Vec<PathBuf>>>(
 
     println!("Benchmark execution finished successfully!");
 
-    export_cumulated_results(&bm_all_results);
-
     bm_all_results
 }
 
