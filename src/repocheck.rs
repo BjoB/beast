@@ -1,9 +1,13 @@
+use crate::exec::*;
+use crate::find::*;
 use crate::logger::*;
+use crate::parse::*;
 
 use colored::*;
 use execute::{shell, Execute};
 use git2::{Commit, Error, Oid, Repository};
 use serde::{Deserialize, Serialize};
+use std::fmt::Write;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -83,7 +87,7 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
         let commit = repo.find_commit(rev?)?;
         checkout_commit(repo, &commit)?;
 
-        println!("Building for commit {}...", commit.id());
+        println!("Building for commit {}...", &commit.id());
 
         let repo_workdir = repo.workdir().unwrap();
         println!(
@@ -104,7 +108,18 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
 
         println!("{}\n", "Successful!".green());
 
-        //TODO: execute benchmark
+        let benchmark_paths = find_executables(repo_workdir, &settings.benchmark_regex);
+        let results = execute_benchmarks(benchmark_paths);
+
+        //TODO: add repo and branchname as dirname and create
+        // and check / delete directories with new run
+        let commit_id_str = id_to_str(commit.id().as_bytes());
+        let export_file_name = String::new() + "beast_repocheck_" + commit_id_str.as_str();
+
+        let mut export_file_path = preferences::prefs_base_dir().unwrap();
+        export_file_path.push(Path::new(&export_file_name));
+
+        export_results_to_file(&results, export_file_path.as_path());
     }
 
     Ok(())
@@ -121,6 +136,14 @@ fn checkout_commit(repo: &Repository, commit: &Commit) -> Result<(), Error> {
     repo.checkout_tree(commit.as_object(), None)?;
     repo.set_head_detached(commit.id())?;
     Ok(())
+}
+
+fn id_to_str(oid: &[u8]) -> String {
+    let mut oid_str = String::new();
+    for &byte in oid {
+        write!(&mut oid_str, "{:X} ", byte).expect("Could not write commit ID byte!");
+    }
+    oid_str
 }
 
 #[cfg(test)]

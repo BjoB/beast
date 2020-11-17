@@ -81,6 +81,19 @@ pub fn export_cumulated_results(cumulated_results: &Vec<BenchmarkResults>) {
     ));
 }
 
+pub fn export_results_to_file(results: &Vec<BenchmarkResults>, file_path: &Path) {
+    let f = File::create(file_path).expect(&format!(
+        "Could not create file {}!",
+        file_path.to_string_lossy()
+    ));
+    let results_json_val = json!(*results);
+
+    serde_json::to_writer(&f, &results_json_val).expect(&format!(
+        "Could not write to file {}!",
+        file_path.to_string_lossy()
+    ));
+}
+
 fn json_from_file<P: AsRef<Path>>(file_path: P) -> serde_json::Value {
     let result_file = File::open(file_path).expect("Benchmark result file not found!");
     let reader = BufReader::new(result_file);
