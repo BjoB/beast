@@ -114,7 +114,8 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
         //TODO: add repo and branchname as dirname and create
         // and check / delete directories with new run
         let commit_id_str = id_to_str(commit.id().as_bytes());
-        let export_file_name = String::new() + "beast_repocheck_" + commit_id_str.as_str();
+        let export_file_name =
+            String::new() + "beast_repocheck_" + commit_id_str.as_str() + ".json";
 
         let mut export_file_path = preferences::prefs_base_dir().unwrap();
         export_file_path.push(Path::new(&export_file_name));
@@ -141,7 +142,7 @@ fn checkout_commit(repo: &Repository, commit: &Commit) -> Result<(), Error> {
 fn id_to_str(oid: &[u8]) -> String {
     let mut oid_str = String::new();
     for &byte in oid {
-        write!(&mut oid_str, "{:X} ", byte).expect("Could not write commit ID byte!");
+        write!(&mut oid_str, "{:x}", byte).expect("Could not write commit ID byte!");
     }
     oid_str
 }
