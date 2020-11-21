@@ -66,13 +66,17 @@ pub fn run(settings: &RepocheckSettings) {
     println!("{}\n", "Successful!".green());
 
     println!("Walking specified commit range...");
-    if let Err(e) = walk_commits(&repo, &settings) {
+    if let Err(e) = walk_commits(&repo, &full_repo_path, &settings) {
         error_and_exit("Could not walk through specified commit range", &e);
     }
     println!("{}\n", "Successful!".green());
 }
 
-fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), Error> {
+fn walk_commits(
+    repo: &Repository,
+    full_repo_path: &Path,
+    settings: &RepocheckSettings,
+) -> Result<(), Error> {
     let from_commit_oid = Oid::from_str(settings.from_commit.as_str())?;
     let to_commit_oid = Oid::from_str(settings.to_commit.as_str())?;
     let from_commit_parent = repo.find_commit(from_commit_oid)?.parent(0)?;
@@ -111,14 +115,16 @@ fn walk_commits(repo: &Repository, settings: &RepocheckSettings) -> Result<(), E
         let benchmark_paths = find_executables(repo_workdir, &settings.benchmark_regex);
         let results = execute_benchmarks(benchmark_paths);
 
-        //TODO: add repo and branchname as dirname and create
-        // and check / delete directories with new run
         let commit_id_str = id_to_str(commit.id().as_bytes());
-        let export_file_name =
-            String::new() + "beast_repocheck_" + commit_id_str.as_str() + ".json";
+        let export_file_name = String::new() + "commit_" + commit_id_str.as_str() + ".json";
 
-        let mut export_file_path = preferences::prefs_base_dir().unwrap();
+        //TODO: check / delete directories with new run?
+        let mut export_file_path = export_dir(full_repo_path, &settings.branch_name);
         export_file_path.push(Path::new(&export_file_name));
+
+        // create parent dir
+        let export_parent_dir = export_file_path.parent().unwrap();
+        std::fs::create_dir_all(export_parent_dir).unwrap();
 
         export_results_to_file(&results, export_file_path.as_path());
     }
@@ -139,9 +145,18 @@ fn checkout_commit(repo: &Repository, commit: &Commit) -> Result<(), Error> {
     Ok(())
 }
 
+fn export_dir(repo_path: &Path, branch_name: &str) -> PathBuf {
+    let mut export_file_path = preferences::prefs_base_dir().unwrap();
+    export_file_path.push(Path::new("beastrepocheck"));
+    export_file_path.push(repo_path.components().last().unwrap());
+    export_file_path.push(Path::new(branch_name));
+    export_file_path
+}
+
 fn id_to_str(oid: &[u8]) -> String {
     let mut oid_str = String::new();
-    for &byte in oid {
+    // only take first 4 bytes
+    for &byte in &oid[0..4] {
         write!(&mut oid_str, "{:x}", byte).expect("Could not write commit ID byte!");
     }
     oid_str
