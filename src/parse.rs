@@ -16,6 +16,7 @@ pub struct DataBaseEntry {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BenchmarkResults {
+    pub commit: Option<String>,
     pub context: BenchmarkContext,
     pub benchmarks: Vec<BenchmarkResult>,
 }
@@ -43,6 +44,7 @@ pub fn parse_single_benchmark_file<P: AsRef<Path>>(file_path: P) -> BenchmarkRes
     let bm_list = json["benchmarks"].as_array().unwrap();
 
     let mut results = BenchmarkResults {
+        commit: Some("".to_string()),
         context: serde_json::from_value(bm_context.clone()).unwrap(),
         benchmarks: Vec::new(),
     };

@@ -8,7 +8,7 @@ use execute::{shell, Execute};
 use git2::{Commit, Error, Oid, Repository};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
@@ -31,6 +31,26 @@ pub fn parse<P: AsRef<Path>>(yaml_path: P) -> RepocheckSettings {
         },
         Err(e) => {
             error_and_exit("Could not open repocheck yaml", &e);
+        }
+    }
+}
+
+pub fn plot_repocheck_results(settings: &RepocheckSettings) {
+    let full_repo_path = match std::fs::canonicalize(settings.repo_path.as_path()) {
+        Ok(path) => path,
+        Err(e) => {
+            error_and_exit("Invalid path to repository", &e);
+        }
+    };
+
+    let export_dir = export_dir(&full_repo_path, &settings.branch_name);
+
+    if export_dir.is_dir() {
+        println!("Files to parse:");
+        for entry in fs::read_dir(export_dir).unwrap() {
+            let repocheck_file_path = entry.unwrap().path();
+            println!("{}", &repocheck_file_path.to_string_lossy());
+            // TODO: add results to a vec, then plot all with function added to plot.rs
         }
     }
 }
@@ -113,13 +133,16 @@ fn walk_commits(
         println!("{}\n", "Successful!".green());
 
         let benchmark_paths = find_executables(repo_workdir, &settings.benchmark_regex);
-        let results = execute_benchmarks(benchmark_paths);
+        let mut results = execute_benchmarks(benchmark_paths);
 
         let commit_id_str = id_to_str(commit.id().as_bytes());
-        let export_file_name = String::new() + "commit_" + commit_id_str.as_str() + ".json";
+        append_commit_id(&mut results, &commit_id_str);
 
-        //TODO: check / delete directories with new run?
-        let mut export_file_path = export_dir(full_repo_path, &settings.branch_name);
+        let export_file_name = "commit_".to_string() + commit_id_str.as_str() + ".json";
+        let export_dir = export_dir(full_repo_path, &settings.branch_name);
+        // TODO: delete dir if existent?
+
+        let mut export_file_path = export_dir;
         export_file_path.push(Path::new(&export_file_name));
 
         // create parent dir
@@ -153,11 +176,16 @@ fn export_dir(repo_path: &Path, branch_name: &str) -> PathBuf {
     export_file_path
 }
 
+fn append_commit_id(results: &mut Vec<BenchmarkResults>, commit_id_str: &str) {
+    for result in results {
+        result.commit = Some(commit_id_str.to_string());
+    }
+}
+
 fn id_to_str(oid: &[u8]) -> String {
     let mut oid_str = String::new();
-    // only take first 4 bytes
     for &byte in &oid[0..4] {
-        write!(&mut oid_str, "{:x}", byte).expect("Could not write commit ID byte!");
+        write!(&mut oid_str, "{:02x}", byte).expect("Could not write commit ID byte!");
     }
     oid_str
 }

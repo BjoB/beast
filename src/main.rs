@@ -98,7 +98,12 @@ fn main() -> Result<(), std::io::Error> {
             .about("Lists distinct tags in current benchmark collection")
         )
         .subcommand(SubCommand::with_name("repocheck")
-            .about("Runs beast for the commit range previously specified in the yaml set via 'beast config'.")
+            .about("Runs beast for the commit range previously specified in the yaml set via 'beast config'")
+            .arg(
+                Arg::with_name("plot")
+                .help("Plot repocheck results from previous run, configured in the according yaml")
+                .long("plot")
+            )
         )
         .get_matches();
 
@@ -242,9 +247,15 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
 }
 
 fn handle_repocheck_commands(matches: &ArgMatches, config: &AppConfig) {
-    if let Some(ref _submatches) = matches.subcommand_matches("repocheck") {
+    if let Some(ref submatches) = matches.subcommand_matches("repocheck") {
         let yaml_path = Path::new(config.repocheck_config_yaml());
         let settings = repocheck::parse(yaml_path);
+
+        if submatches.is_present("plot") {
+            repocheck::plot_repocheck_results(&settings);
+            std::process::exit(0);
+        }
+
         repocheck::run(&settings);
         std::process::exit(0);
     }
