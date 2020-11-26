@@ -96,7 +96,7 @@ pub fn export_results_to_file(results: &Vec<BenchmarkResults>, file_path: &Path)
     ));
 }
 
-fn json_from_file<P: AsRef<Path>>(file_path: P) -> serde_json::Value {
+pub fn json_from_file<P: AsRef<Path>>(file_path: P) -> serde_json::Value {
     let result_file = File::open(file_path).expect("Benchmark result file not found!");
     let reader = BufReader::new(result_file);
     return serde_json::from_reader(reader).expect("JSON was not well-formatted!");

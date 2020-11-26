@@ -35,7 +35,7 @@ pub fn parse<P: AsRef<Path>>(yaml_path: P) -> RepocheckSettings {
     }
 }
 
-pub fn plot_repocheck_results(settings: &RepocheckSettings) {
+pub fn collect_repocheck_results(settings: &RepocheckSettings) -> Vec<BenchmarkResults> {
     let full_repo_path = match std::fs::canonicalize(settings.repo_path.as_path()) {
         Ok(path) => path,
         Err(e) => {
@@ -45,14 +45,19 @@ pub fn plot_repocheck_results(settings: &RepocheckSettings) {
 
     let export_dir = export_dir(&full_repo_path, &settings.branch_name);
 
+    let mut collected_benchmark_results: Vec<BenchmarkResults> = vec![];
     if export_dir.is_dir() {
         println!("Files to parse:");
         for entry in fs::read_dir(export_dir).unwrap() {
             let repocheck_file_path = entry.unwrap().path();
             println!("{}", &repocheck_file_path.to_string_lossy());
-            // TODO: add results to a vec, then plot all with function added to plot.rs
+            let single_file_results = json_from_file(repocheck_file_path.as_path());
+            let mut json: Vec<BenchmarkResults> = serde_json::from_value(single_file_results)
+                .expect("Could not deserialize JsonValue from single benchmark file!");
+            collected_benchmark_results.append(&mut json);
         }
     }
+    collected_benchmark_results
 }
 
 pub fn run(settings: &RepocheckSettings) {

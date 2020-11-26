@@ -247,12 +247,15 @@ fn handle_database_commands(matches: &ArgMatches, config: &AppConfig) {
 }
 
 fn handle_repocheck_commands(matches: &ArgMatches, config: &AppConfig) {
+    let plot_time_unit = matches.value_of("timeunit").unwrap();
+
     if let Some(ref submatches) = matches.subcommand_matches("repocheck") {
         let yaml_path = Path::new(config.repocheck_config_yaml());
         let settings = repocheck::parse(yaml_path);
 
         if submatches.is_present("plot") {
-            repocheck::plot_repocheck_results(&settings);
+            let results = repocheck::collect_repocheck_results(&settings);
+            plot_all_as_commit_series(&results, plot_time_unit);
             std::process::exit(0);
         }
 
