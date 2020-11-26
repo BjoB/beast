@@ -51,6 +51,66 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
     plot.show();
 }
 
+pub fn plot_all_as_commit_series(results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
+    let mut xlabels: HashMap<String, Vec<String>> = HashMap::new();
+    let mut cpu_times: HashMap<String, Vec<f64>> = HashMap::new();
+    let mut tags: HashMap<String, Vec<String>> = HashMap::new();
+
+    // collect benchmark data per commit for each "exename_benchmarkname"
+    for result in results {
+        for benchmark in &result.benchmarks {
+            let exe_name = result.context.executable.file_name().unwrap();
+            let trace_name = exe_name.to_string_lossy().to_owned() + "_" + benchmark.name.as_str();
+            let trace_name = trace_name.to_string();
+
+            // build current xlabel
+            let commit_id = result.commit.as_ref().unwrap();
+            let xlabel = build_label(commit_id.as_str(), "");
+
+            // set cpu_time based on time unit for plot
+            let cpu_time_as_duration =
+                from_benchmark_time(benchmark.time_unit.as_ref(), benchmark.cpu_time as u64);
+            let converted_cpu_time = convert_time_to_unit(cpu_time_as_duration, plot_time_unit);
+
+            xlabels
+                .entry(trace_name.clone())
+                .or_insert(Vec::new())
+                .push(xlabel);
+            cpu_times
+                .entry(trace_name.clone())
+                .or_insert(Vec::new())
+                .push(converted_cpu_time);
+            tags.entry(trace_name.clone())
+                .or_insert(Vec::new())
+                .push(commit_id.clone());
+        }
+    }
+
+    // create plot
+    let y_title = format!("CPU runtime [{}]", plot_time_unit).to_string();
+
+    let layout = Layout::new()
+        .title(Title::from("Benchmark results over time"))
+        .x_axis(Axis::new().title(Title::from("Commit")).auto_margin(true))
+        .y_axis(Axis::new().title(Title::from(y_title.as_str())));
+
+    let mut plot = Plot::new();
+
+    plot.set_layout(layout);
+
+    for trace_name in xlabels.keys() {
+        let trace = Scatter::new(xlabels[trace_name].clone(), cpu_times[trace_name].clone())
+            .mode(Mode::LinesMarkers)
+            .name(trace_name)
+            .text_array(tags[trace_name].clone())
+            .line(Line::new().shape(LineShape::Hv));
+
+        plot.add_trace(trace);
+    }
+
+    plot.show();
+}
+
 pub fn plot_db_entries(db_entries: &Vec<DataBaseEntry>, plot_time_unit: &str) {
     let mut xlabels: HashMap<String, Vec<String>> = HashMap::new();
     let mut cpu_times: HashMap<String, Vec<f64>> = HashMap::new();
