@@ -51,6 +51,7 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
     plot.show();
 }
 
+// TODO: refine plot options, e.g. include means and variances in chart
 pub fn plot_all_as_commit_series(results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
     let mut xlabels: HashMap<String, Vec<String>> = HashMap::new();
     let mut cpu_times: HashMap<String, Vec<f64>> = HashMap::new();
