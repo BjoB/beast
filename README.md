@@ -4,6 +4,13 @@
 
 ``beast`` is a simple tool to execute and post-process a set of google benchmarks. The basic feature is plotting multiple benchmark results in one single plot (powered by `plotly`). It is also possible to configure access to a ``mongoDB`` database and push results to it.
 
+- [Installation](#installation)
+- [Basic Usage Example](#basic-usage-example)
+- [Database Setup](#database-setup)
+- [Repository Benchmarking](#repository-benchmarking)
+
+----------------------------------
+
 ## **Installation**
 
 Download the latest release from:
@@ -39,7 +46,7 @@ Finally you should be able to push your most recent generated benchmark results 
 
 ![beast_on_examples](doc/example_time_series.png)
 
-## **Repocheck Benchmarking**
+## **Repository Benchmarking**
 
 To run benchmarks on a certain commit range of a git repository, you need to provide the needed information in a small `yaml` file.
 
