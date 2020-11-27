@@ -21,6 +21,7 @@ pub struct RepocheckSettings {
     to_commit: String,
     build_commands: String,
     benchmark_regex: String,
+    pub no_clean: Option<bool>, // special flag to e.g. continue from previous run
 }
 
 pub fn parse<P: AsRef<Path>>(yaml_path: P) -> RepocheckSettings {
@@ -90,6 +91,23 @@ pub fn run(settings: &RepocheckSettings) {
     }
     println!("{}\n", "Successful!".green());
 
+    // "continue run" or "clean run"
+    match &settings.no_clean {
+        Some(true) => {
+            println!("Will not delete previous results!");
+        }
+        Some(false) | None => {
+            let export_dir_path = export_dir(&full_repo_path, &settings.branch_name);
+            if export_dir_path.is_dir() {
+                println!(
+                    "Deleting previous results in directory {}...",
+                    export_dir_path.as_path().to_string_lossy()
+                );
+                fs::remove_dir_all(export_dir_path).expect("Could not delete directory!");
+            }
+        }
+    }
+
     println!("Walking specified commit range...");
     if let Err(e) = walk_commits(&repo, &full_repo_path, &settings) {
         error_and_exit("Could not walk through specified commit range", &e);
@@ -114,6 +132,24 @@ fn walk_commits(
 
     for rev in revwalk {
         let commit = repo.find_commit(rev?)?;
+
+        // create filename to save results
+        let commit_id_str = id_to_str(commit.id().as_bytes());
+        let export_file_name = "commit_".to_string() + commit_id_str.as_str() + ".json";
+        let export_dir = export_dir(full_repo_path, &settings.branch_name);
+        let mut export_file_path = export_dir;
+        export_file_path.push(Path::new(&export_file_name));
+
+        if let Some(true) = settings.no_clean.as_ref() {
+            if export_file_path.exists() {
+                println!(
+                    "Results for commit {} already present. Continue...",
+                    commit_id_str
+                );
+                continue;
+            }
+        }
+
         checkout_commit(repo, &commit)?;
 
         println!("Building for commit {}...", &commit.id());
@@ -140,15 +176,7 @@ fn walk_commits(
         let benchmark_paths = find_executables(repo_workdir, &settings.benchmark_regex);
         let mut results = execute_benchmarks(benchmark_paths);
 
-        let commit_id_str = id_to_str(commit.id().as_bytes());
         append_commit_id(&mut results, &commit_id_str);
-
-        let export_file_name = "commit_".to_string() + commit_id_str.as_str() + ".json";
-        let export_dir = export_dir(full_repo_path, &settings.branch_name);
-        // TODO: delete dir if existent?
-
-        let mut export_file_path = export_dir;
-        export_file_path.push(Path::new(&export_file_name));
 
         // create parent dir
         let export_parent_dir = export_file_path.parent().unwrap();

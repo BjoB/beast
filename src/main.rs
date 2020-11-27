@@ -100,6 +100,11 @@ fn main() -> Result<(), std::io::Error> {
         .subcommand(SubCommand::with_name("repocheck")
             .about("Runs beast for the commit range previously specified in the yaml set via 'beast config'")
             .arg(
+                Arg::with_name("noclean")
+                .help("Run without cleaning previous results. Run will continue with commits without existing results")
+                .long("no-clean")
+            )
+            .arg(
                 Arg::with_name("plot")
                 .help("Plot repocheck results from previous run, configured in the according yaml")
                 .long("plot")
@@ -251,7 +256,11 @@ fn handle_repocheck_commands(matches: &ArgMatches, config: &AppConfig) {
 
     if let Some(ref submatches) = matches.subcommand_matches("repocheck") {
         let yaml_path = Path::new(config.repocheck_config_yaml());
-        let settings = repocheck::parse(yaml_path);
+        let mut settings = repocheck::parse(yaml_path);
+
+        if submatches.is_present("noclean") {
+            settings.no_clean = Some(true);
+        }
 
         if submatches.is_present("plot") {
             let results = repocheck::collect_repocheck_results(&settings);
