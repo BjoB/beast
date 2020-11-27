@@ -38,3 +38,26 @@ Assuming a successful database setup, the only thing which is left to be done is
 Finally you should be able to push your most recent generated benchmark results via ``beast dbpush`` or to retrieve and plot previous pushed data with the ``beast dbplot`` command:
 
 ![beast_on_examples](doc/example_time_series.png)
+
+## **Repocheck Benchmarking**
+
+To run benchmarks on a certain commit range of a git repository, you need to provide the needed information in a small `yaml` file.
+
+Example for the `beast` repo:
+
+```yaml
+version: 1
+repo_path: <PATH_TO_BEAST_REPO> # absolute or relative to cwd
+branch_name: master
+from_commit: a92f7b6f4e5da30908577b9109040987f6ca9bf6
+to_commit: 85347d6fd06acbd700be5237a94ca49486bb5e25
+build_commands: |
+  mkdir build
+  cd build && cmake ..
+  cd build && cmake --build . --target all
+benchmark_regex: .*benchmark[^.]*$
+```
+
+Adapt the `yaml` to your needs and set the path to it with `beast config --set-repocheck-yaml`. Run and plot the benchmarks with `beast repocheck` (check out `--help` for more details).
+
+![beast_commit_range_benchmark](doc/commit_range_runtime.png)
