@@ -14,13 +14,13 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable benchmark self tests." FORCE
 # Build #
 #########
 
-macro(add_findprime_benchmark BENCHMARK_BASE_NAME NUMBER)
-    set(EXE_NAME "${BENCHMARK_BASE_NAME}-${NUMBER}")
+macro(add_findprime_benchmark BENCHMARK_BASE_NAME MAIN_CPP_NAME NUMBER)
+    set(EXE_NAME "${BENCHMARK_BASE_NAME}-${MAIN_CPP_NAME}-${NUMBER}")
     add_executable(${EXE_NAME})
 
     target_sources(${EXE_NAME}
         PRIVATE
-            "src/main.cpp"
+            src/${MAIN_CPP_NAME}.cpp
     )
 
     target_link_libraries(${EXE_NAME}
@@ -34,6 +34,7 @@ macro(add_findprime_benchmark BENCHMARK_BASE_NAME NUMBER)
     )
 endmacro()
 
-add_findprime_benchmark(${PROJECT_NAME} 1000)
-add_findprime_benchmark(${PROJECT_NAME} 1250)
-add_findprime_benchmark(${PROJECT_NAME} 1500)
+add_findprime_benchmark(${PROJECT_NAME} "simple" 1000)
+add_findprime_benchmark(${PROJECT_NAME} "simple" 1250)
+add_findprime_benchmark(${PROJECT_NAME} "simple" 1500)
+add_findprime_benchmark(${PROJECT_NAME} "with_arg_list" 1000)
