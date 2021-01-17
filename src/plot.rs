@@ -1,12 +1,12 @@
 use crate::parse::*;
 
-use plotly::common::{Line, LineShape, Mode, Title};
+use plotly::common::{DashType, Line, LineShape, Mode, Title};
 use plotly::layout::{Axis, BarMode, Layout};
 use plotly::{Bar, Plot, Scatter};
 use std::collections::HashMap;
 use std::time::Duration;
 
-pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
+pub fn plot_all_as_bars(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
     // use first benchmark for cpu info as all results are retrieved on the same machine
     let plot_title = format!(
         "CPU count: {}, MHz/CPU: {}",
@@ -15,6 +15,7 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
     .to_string();
 
     let y_title = format!("CPU runtime [{}]", plot_time_unit).to_string();
+    let mut plot = Plot::new();
 
     let layout = Layout::new()
         .title(Title::from(plot_title.as_str()))
@@ -22,8 +23,6 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
         .bar_group_gap(0.1)
         .x_axis(Axis::new().auto_margin(true))
         .y_axis(Axis::new().title(Title::from(y_title.as_str())));
-
-    let mut plot = Plot::new();
 
     plot.set_layout(layout);
 
@@ -42,12 +41,67 @@ pub fn plot_all(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str) {
             sub_bm_cpu_times.push(sub_bm_converted_cpu_time);
         }
 
-        let res_trace =
-            Bar::new(sub_bm_names, sub_bm_cpu_times).name(&bm_results_name.to_string_lossy());
-
-        plot.add_trace(res_trace);
+        plot.add_trace(
+            Bar::new(sub_bm_names, sub_bm_cpu_times).name(&bm_results_name.to_string_lossy()),
+        );
     }
 
+    plot.show();
+}
+
+pub fn plot_all_as_lines(all_results: &Vec<BenchmarkResults>, plot_time_unit: &str, x_title: &str) {
+    // use first benchmark for cpu info as all results are retrieved on the same machine
+    let plot_title = format!(
+        "CPU count: {}, MHz/CPU: {}",
+        all_results[0].context.num_cpus, all_results[0].context.mhz_per_cpu
+    )
+    .to_string();
+    let y_title = format!("CPU runtime [{}]", plot_time_unit).to_string();
+    let mut plot = Plot::new();
+
+    for bm_results in all_results {
+        let mut x_values: HashMap<String, Vec<u64>> = HashMap::new();
+        let mut y_values: HashMap<String, Vec<f64>> = HashMap::new();
+        // let bm_results_name = bm_results.context.executable.as_path().file_name().unwrap();
+
+        // collect sub benchmarks results for traces
+        for sub_bm_res in &bm_results.benchmarks {
+            let splitted_name = sub_bm_res.name.split("/");
+            let splitted_name_vec = splitted_name.collect::<Vec<&str>>();
+            let sub_bm_name = splitted_name_vec[0];
+            let sub_bm_x_val = splitted_name_vec[1].parse::<u64>().unwrap();
+
+            x_values
+                .entry(sub_bm_name.to_string())
+                .or_insert(Vec::new())
+                .push(sub_bm_x_val);
+
+            let sub_bm_duration =
+                from_benchmark_time(sub_bm_res.time_unit.as_ref(), sub_bm_res.cpu_time as u64);
+            let sub_bm_converted_cpu_time = convert_time_to_unit(sub_bm_duration, plot_time_unit);
+
+            y_values
+                .entry(sub_bm_name.to_string())
+                .or_insert(Vec::new())
+                .push(sub_bm_converted_cpu_time);
+        }
+
+        for bm_name in y_values.keys() {
+            let trace = Scatter::new(x_values[bm_name].to_owned(), y_values[bm_name].to_owned())
+                .mode(Mode::LinesMarkers)
+                .name(bm_name)
+                .line(Line::new().dash(DashType::Dash));
+            plot.add_trace(trace);
+        }
+    }
+
+    let layout = Layout::new()
+        .title(Title::from(plot_title.as_str()))
+        .x_axis(Axis::new().title(Title::from(x_title)))
+        .y_axis(Axis::new().title(Title::from(y_title.as_str())));
+    // TODO: create common tick list from all x-value-vectors (use tick_mode(TickMode::Array).tick_values())
+
+    plot.set_layout(layout);
     plot.show();
 }
 

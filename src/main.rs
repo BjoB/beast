@@ -45,6 +45,17 @@ fn main() -> Result<(), std::io::Error> {
             .default_value("us"),
         )
         .arg(
+            Arg::with_name("lineplot")
+                .help("Create lineplot instead of bar plot for benchmarks with argument list")
+                .long("lineplot")
+        )
+        .arg(
+            Arg::from_usage(
+                "[xtitle], --xtitle=[STRING] 'Line plot x-axis title to display'",
+            )
+            .default_value("N"),
+        )
+        .arg(
             Arg::with_name("noplot")
                 .help("Do not create plot for benchmark results, e.g. when using beast in scripts")
                 .long("noplot")
@@ -134,7 +145,12 @@ fn main() -> Result<(), std::io::Error> {
     // Plot last results
     if let Some(ref _matches) = matches.subcommand_matches("plotlast") {
         let last_results = parse::parse_cumulated_benchmark_file();
-        plot_all(&last_results, plot_time_unit);
+        if matches.is_present("lineplot") {
+            let x_title = matches.value_of("xtitle").unwrap();
+            plot_all_as_lines(&last_results, plot_time_unit, x_title);
+        } else {
+            plot_all_as_bars(&last_results, plot_time_unit);
+        }
         return Ok(());
     }
 
@@ -167,7 +183,12 @@ fn main() -> Result<(), std::io::Error> {
     export_cumulated_results(&benchmark_results);
 
     if !matches.is_present("noplot") {
-        plot_all(&benchmark_results, plot_time_unit);
+        if matches.is_present("lineplot") {
+            let x_title = matches.value_of("xtitle").unwrap();
+            plot_all_as_lines(&benchmark_results, plot_time_unit, x_title);
+        } else {
+            plot_all_as_bars(&benchmark_results, plot_time_unit);
+        }
     }
 
     return Ok(());
