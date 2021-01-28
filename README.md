@@ -40,7 +40,7 @@ you will get some small benchmark executables which can be plotted with ``beast`
 
 If you want to use ``beast``'s database related functionality, you need to set up a ``mongoDB`` database, either by installing the Community Edition from [https://docs.mongodb.com/manual/administration/install-community/](https://docs.mongodb.com/manual/administration/install-community/) in your desired environment or by using the cloud based solution [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas).
 
-Assuming a successful database setup, the only thing which is left to be done is a little configuration via ``beast config``. Set the ``mongoDB``-URI, the database name and the collection name with the according ``--set...`` commands. Note: The collection does not have to be existent, it will created with the first push to it.
+Assuming a successful database setup, the only thing which is left to be done is a little configuration via ``beast config``. Set the ``mongoDB``-URI, the database name and the collection name with the according ``--set...`` commands. Note: The collection does not have to be existent, it will be created with the first push to it.
 
 Finally you should be able to push your most recent generated benchmark results via ``beast dbpush`` or to retrieve and plot previous pushed data with the ``beast dbplot`` command:
 
