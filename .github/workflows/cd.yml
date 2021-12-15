@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  deploy_target_name: 'x86_64-unknown-linux-gnu'
+
 jobs:
   quickcheck:
     runs-on: ubuntu-latest
@@ -29,7 +32,7 @@ jobs:
       - name: Install cargo-deb
         run: cargo install cargo-deb
       - name: Build deb package
-        run: cargo deb
+        run: cargo deb --target=${{ env.deploy_target_name }}
       - name: Check repo directory
         run: ls -lha
       - name: Create release
@@ -41,4 +44,4 @@ jobs:
           tag_name: ${{ needs.quickcheck.outputs.puretag }}
           draft: true
           prerelease: false
-          files: ./target/debian/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
+          files: ./target/${{ env.deploy_target_name }}/debian/beast_${{needs.quickcheck.outputs.version}}_amd64.deb
