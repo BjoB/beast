@@ -1,7 +1,7 @@
 [package]
 name = "beast"
 description = "(be)nchmark (a)nalysis and (s)ummary (t)ool"
-version = "2.1.0"
+version = "2.1.1"
 authors = ["Björn Barschtipan"]
 edition = "2018"
 license = "MIT"
@@ -30,7 +30,7 @@ features = ["sync"]
 
 [package.metadata.deb]
 maintainer = "Björn Barschtipan"
-copyright = "2020, Björn Barschtipan"
+copyright = "2021, Björn Barschtipan"
 license-file = ["LICENSE", "4"]
 extended-description = """\
 A simple command line tool to execute google benchmarks \
